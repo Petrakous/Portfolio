@@ -20,7 +20,9 @@ if (mount && !mount.dataset.initialized) {
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(31, 1, 0.05, 100);
-    camera.position.set(0, 1.08, reducedMotion ? 3.8 : 10.5);
+    let closeCameraZ = compact ? 6.1 : 5.7;
+    let farCameraZ = closeCameraZ + 7;
+    camera.position.set(0, reducedMotion ? 0.18 : 0.55, reducedMotion ? closeCameraZ : farCameraZ);
 
     const key = new THREE.DirectionalLight(0xfff4e8, 2.5);
     key.position.set(-2.5, 4, 4);
@@ -171,13 +173,24 @@ if (mount && !mount.dataset.initialized) {
       "/avatar/models/CesiumMan.glb",
       (gltf) => {
         model = gltf.scene;
+        // Align CesiumMan's authored axis with the viewer's Y-up stage before
+        // measuring, centering, and fitting the camera.
+        model.rotation.y = Math.PI * 0.5;
+        model.updateMatrixWorld(true);
         const bounds = new THREE.Box3().setFromObject(model);
         const size = bounds.getSize(new THREE.Vector3());
         const center = bounds.getCenter(new THREE.Vector3());
-        const scale = 2.75 / Math.max(size.y, 0.01);
+        const scale = 2.45 / Math.max(size.y, 0.01);
         model.scale.setScalar(scale);
-        model.position.set(-center.x * scale, -bounds.min.y * scale - 1.35, -center.z * scale);
+        model.position.set(-center.x * scale, -bounds.min.y * scale - 1.2, -center.z * scale);
         root.add(model);
+        model.updateMatrixWorld(true);
+        const fittedBounds = new THREE.Box3().setFromObject(model);
+        const fittedSize = fittedBounds.getSize(new THREE.Vector3());
+        const verticalFov = THREE.MathUtils.degToRad(camera.fov);
+        closeCameraZ = Math.max(5.2, (fittedSize.y * 0.5) / Math.tan(verticalFov * 0.5) * 1.18);
+        farCameraZ = closeCameraZ + 7;
+        if (reducedMotion) camera.position.z = closeCameraZ;
 
         let sourceMesh = null;
         model.traverse((object) => {
@@ -186,8 +199,8 @@ if (mount && !mount.dataset.initialized) {
           const materials = Array.isArray(object.material) ? object.material : [object.material];
           materials.forEach((material) => {
             material.transparent = true;
-            material.opacity = 0.16;
-            material.depthWrite = false;
+            material.opacity = 0.92;
+            material.depthWrite = true;
             material.roughness = 0.72;
             material.metalness = 0.05;
           });
@@ -230,14 +243,15 @@ if (mount && !mount.dataset.initialized) {
         updateSplatProxy();
         const intro = reducedMotion ? 1 : Math.min((time - introStart) / 3200, 1);
         const eased = 1 - Math.pow(1 - intro, 4);
-        camera.position.z = THREE.MathUtils.lerp(10.5, compact ? 4.15 : 3.65, eased);
-        camera.position.y = THREE.MathUtils.lerp(1.35, 1.08, eased);
-        root.rotation.y = (1 - eased) * (-Math.PI * 2.1) + Math.sin(time * 0.00018) * 0.13;
+        camera.position.z = THREE.MathUtils.lerp(farCameraZ, closeCameraZ, eased);
+        camera.position.y = THREE.MathUtils.lerp(0.55, 0.18, eased);
+        root.rotation.y = Math.PI * 0.5 + (1 - eased) * (-Math.PI * 2.1) + Math.sin(time * 0.00018) * 0.13;
         root.rotation.x = pointerY * 0.025;
-        root.position.x = pointerX * 0.05;
+        const framingOffset = camera.aspect > 0.9 ? -0.7 : -0.18;
+        root.position.x = framingOffset + pointerX * 0.05;
       }
 
-      camera.lookAt(0, 0.08, 0);
+      camera.lookAt(0, 0.04, 0);
       renderer.render(scene, camera);
     }
 

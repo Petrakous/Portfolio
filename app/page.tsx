@@ -77,18 +77,20 @@ function AvatarRig({ mode, setMode }: { mode: HeroMode; setMode: (mode: HeroMode
         <div className="rig-leg leg-right"><i className="upper" /><i className="lower" /></div>
       </div>
 
-      <button className="hotspot hotspot-head" onClick={() => activate("knowledge")} aria-pressed={mode === "knowledge"}>
-        <span>01</span> Knowledge
-      </button>
-      <button className="hotspot hotspot-left" onClick={() => activate("research")} aria-pressed={mode === "research"}>
-        <span>02</span> Research
-      </button>
-      <button className="hotspot hotspot-right" onClick={() => activate("projects")} aria-pressed={mode === "projects"}>
-        <span>03</span> Work
-      </button>
-      <button className="hotspot hotspot-chest" onClick={() => activate("about")} aria-pressed={mode === "about"}>
-        <span>04</span> About
-      </button>
+      <div className="avatar-controls" aria-label="Explore portfolio signals">
+        <button className="hotspot hotspot-head" onClick={() => activate("knowledge")} aria-pressed={mode === "knowledge"}>
+          <span>01</span> Knowledge
+        </button>
+        <button className="hotspot hotspot-left" onClick={() => activate("research")} aria-pressed={mode === "research"}>
+          <span>02</span> Research
+        </button>
+        <button className="hotspot hotspot-right" onClick={() => activate("projects")} aria-pressed={mode === "projects"}>
+          <span>03</span> Work
+        </button>
+        <button className="hotspot hotspot-chest" onClick={() => activate("about")} aria-pressed={mode === "about"}>
+          <span>04</span> About
+        </button>
+      </div>
 
       <div className="skill-halo" aria-hidden={mode !== "knowledge"}>
         {['CV', '3D', 'DATA', 'WEB'].map((item) => <span key={item}>{item}</span>)}
