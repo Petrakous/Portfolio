@@ -22,7 +22,8 @@ test("server-renders the finished portfolio shell", async () => {
   assert.match(html, /Selected work/i);
   assert.match(html, /3DHUA/i);
   assert.match(html, /Aerial Detection Atlas/i);
-  assert.match(html, /StudyRooms/i);
+  assert.match(html, /TRIFFID Review Studio/i);
+  assert.doesNotMatch(html, /StudyRooms/i);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape|react-loading-skeleton/i);
 });
 

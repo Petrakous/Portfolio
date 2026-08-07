@@ -1,16 +1,11 @@
 {
-  "version": 1,
-  "renderer": "procedural-css-rig",
+  "version": 2,
+  "renderer": "three-skinned-point-proxy",
   "placeholder": true,
-  "modelPath": null,
-  "scale": 0.92,
+  "modelPath": "/avatar/models/CesiumMan.glb",
+  "modelLicense": "CC BY 4.0 — Cesium GS, Inc.; Khronos glTF Sample Assets",
+  "scale": "normalized at runtime",
   "orientation": [0, 0, 0],
-  "anchors": {
-    "head": "rig-head",
-    "leftHand": "arm-left .hand",
-    "rightHand": "arm-right .hand",
-    "torso": "rig-torso"
-  },
   "intents": {
     "idle": "neutral",
     "look": "knowledge",
@@ -18,12 +13,9 @@
     "presentLeft": "research",
     "identify": "about"
   },
-  "cameraTargets": {
-    "neutral": [0, 0.5, 4.8],
-    "head": [0, 1.1, 3.4],
-    "leftHand": [-0.8, 0.35, 3.8],
-    "rightHand": [0.8, 0.35, 3.8],
-    "torso": [0, 0.35, 3.6]
+  "camera": {
+    "intro": "cinematic dolly from z=10.5 to z=3.65 with a 2.1-turn model reveal",
+    "reducedMotion": "static close framing"
   },
-  "replacementNote": "Replace the procedural rig in app/page.tsx with a mesh, splat, or avatar renderer that consumes these semantic anchors and intent names. Keep the hotspot buttons and HeroMode state contract unchanged."
+  "replacementNote": "This is a rigged GLB sampled into animated point sprites, not a trained Gaussian avatar. Replace modelPath and the renderer when Petros' own capture is ready, while keeping the avatar-mode and avatar-view event contract."
 }

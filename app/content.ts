@@ -8,11 +8,17 @@ export type Project = {
   contribution: string;
   tags: string[];
   facts: string[];
+  lab: {
+    input: string;
+    runtime: string;
+    delivery: string;
+    focus: string;
+  };
   image?: string;
   imageAlt?: string;
   repo?: string;
   live?: string;
-  tone: "space" | "vision" | "pipeline" | "system";
+  tone: "space" | "vision" | "pipeline";
 };
 
 export const projects: Project[] = [
@@ -28,6 +34,12 @@ export const projects: Project[] = [
       "Viewer architecture, scene systems, asset pipeline, first-person navigation, collision, LOD strategy, cutaway tooling, and delivery polish.",
     tags: ["Three.js", "PlayCanvas", "WebGL", "GLB", "Gaussian splats", "LOD"],
     facts: ["GLB + SOG rendering", "Walk / fly / orbit", "Cloudflare R2 asset delivery"],
+    lab: {
+      input: "GLB meshes · SOG splats · camera presets",
+      runtime: "PlayCanvas + browser-native JavaScript",
+      delivery: "Static shell + progressive R2 assets",
+      focus: "LOD, collision, recovery, navigation",
+    },
     image: "/media/3dhua-campus.webp",
     imageAlt: "Gaussian-splat aerial view of the Harokopio University campus",
     repo: "https://github.com/Petrakous/Hua-3D-Showcase",
@@ -46,8 +58,14 @@ export const projects: Project[] = [
       "Data ingestion, JSON generation, comparison UX, model/dataset navigation, annotation rendering, and an interface tuned for visual QA.",
     tags: ["Computer Vision", "JavaScript", "JSON", "Evaluation", "Segmentation", "QA"],
     facts: ["GT / prediction comparison", "Multiple model families", "No-build static delivery"],
-    image: "/media/aerial-segmentation.jpg",
-    imageAlt: "Disaster scene with translucent computer-vision segmentation overlays",
+    lab: {
+      input: "Images · GT JSON · prediction JSON",
+      runtime: "Static JavaScript annotation renderer",
+      delivery: "GitHub Pages · no build step",
+      focus: "Visual QA, comparison, dataset navigation",
+    },
+    image: "/media/aerial-detection.jpg",
+    imageAlt: "Smoke detection result with a model bounding box and confidence score",
     repo: "https://github.com/Petrakous/Aerial-Detection-Atlas",
     live: "https://petrakous.github.io/Aerial-Detection-Atlas/",
     tone: "vision",
@@ -64,24 +82,15 @@ export const projects: Project[] = [
       "Workflow design, media ingestion, annotation and curation interfaces, quality-assurance states, crop audit tools, automation, and export packaging.",
     tags: ["Python", "FFmpeg", "OpenCV", "Data curation", "Annotation", "Automation"],
     facts: ["Source → selection → audit", "Manifest-backed review state", "Human QA at every stage"],
+    lab: {
+      input: "Video sources · manifests · review state",
+      runtime: "Python · FFmpeg · OpenCV · web UI",
+      delivery: "Local review workspace + packaged exports",
+      focus: "Traceability, curation, crop quality",
+    },
     image: "/media/triffid-frame-selection.png",
     imageAlt: "TRIFFID Review Studio frame-selection interface",
     tone: "pipeline",
-  },
-  {
-    id: "studyrooms",
-    index: "04",
-    title: "StudyRooms",
-    eyebrow: "Distributed systems · university project",
-    summary: "One reservation domain, served consistently across MVC, REST, and a second process.",
-    description:
-      "A Spring Boot study-space platform with session and JWT security, centralized reservation rules, MVC and SPA clients, a consumer service, PostgreSQL, Nginx, and resilient external-service adapters.",
-    contribution:
-      "Domain design, dual security chains, REST and MVC surfaces, persistence, container orchestration, external adapters, and business-rule enforcement.",
-    tags: ["Java", "Spring Boot", "JWT", "JPA", "PostgreSQL", "Docker"],
-    facts: ["MVC + REST + SPA", "Session + JWT security", "Docker / Postgres / Nginx"],
-    repo: "https://github.com/Petrakous/studyrooms",
-    tone: "system",
   },
 ];
 
@@ -103,12 +112,6 @@ export const skillDomains = [
     skills: "Python · FFmpeg · OpenCV · manifests · automation",
     evidence: "TRIFFID Review Studio and dataset pipelines",
     project: "triffid-review",
-  },
-  {
-    title: "Backend systems",
-    skills: "Java · Spring Boot · REST · JWT · JPA · Docker",
-    evidence: "StudyRooms distributed reservation platform",
-    project: "studyrooms",
   },
 ];
 

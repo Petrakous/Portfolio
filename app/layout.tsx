@@ -12,7 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: "Petros Koutroulis — Research Tooling, 3D Systems & Software",
     description:
-      "The interactive portfolio of Petros Koutroulis (Petrakous): computer vision, research data tooling, 3D web systems, and distributed software.",
+      "The interactive portfolio of Petros Koutroulis (Petrakous): computer vision, research data tooling, 3D web systems, and research software.",
     keywords: ["Petros Koutroulis", "Petrakous", "computer vision", "research tooling", "3D web", "Gaussian splatting", "software engineering"],
     authors: [{ name: "Petros Koutroulis", url: "https://github.com/Petrakous" }],
     openGraph: {
@@ -26,7 +26,7 @@ export async function generateMetadata(): Promise<Metadata> {
     twitter: {
       card: "summary_large_image",
       title: "Petros Koutroulis — Personal Research Lab",
-      description: "Research tooling, computer vision, spatial computing, and distributed software.",
+      description: "Research tooling, computer vision, spatial computing, and research software.",
       images: [`${origin}/og.png`],
     },
   };
@@ -57,6 +57,15 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         {children}
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
+        <script
+          type="importmap"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({ imports: { three: "/avatar/vendor/three.module.js" } }),
+          }}
+        />
+        {/* The import map must be parsed before this local ES module. */}
+        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
+        <script type="module" src="/avatar/avatar-viewer.js" />
       </body>
     </html>
   );

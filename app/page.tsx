@@ -15,12 +15,12 @@ const heroCopy: Record<HeroMode, { kicker: string; title: string; body: string }
   knowledge: {
     kicker: "Knowledge map",
     title: "Skills, attached to evidence.",
-    body: "Computer vision, spatial computing, research data tooling, and backend systems — each connected to something built.",
+    body: "Computer vision, spatial computing, research data tooling, and software engineering — each connected to something built.",
   },
   projects: {
     kicker: "Right hand · work",
     title: "Systems designed to be explored.",
-    body: "From splat-rendered campuses to model-comparison surfaces and distributed reservation flows.",
+    body: "From splat-rendered campuses to model-comparison surfaces and research curation workflows.",
   },
   research: {
     kicker: "Left hand · research",
@@ -41,8 +41,15 @@ function scrollToId(id: string) {
 function AvatarRig({ mode, setMode }: { mode: HeroMode; setMode: (mode: HeroMode) => void }) {
   const activate = (next: HeroMode) => setMode(mode === next ? "neutral" : next);
 
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent("avatar-mode", { detail: mode }));
+  }, [mode]);
+
   return (
     <div className="avatar-stage" data-state={mode} aria-label="Interactive portfolio navigation">
+      <div className="avatar-webgl" data-avatar-webgl>
+        <span className="avatar-load-status" data-avatar-status>INITIALISING 3D SPLAT PROXY</span>
+      </div>
       <div className="orbit orbit-a" />
       <div className="orbit orbit-b" />
       <div className="avatar-glow" />
@@ -75,7 +82,7 @@ function AvatarRig({ mode, setMode }: { mode: HeroMode; setMode: (mode: HeroMode
       </button>
 
       <div className="skill-halo" aria-hidden={mode !== "knowledge"}>
-        {['CV', '3D', 'DATA', 'API'].map((item) => <span key={item}>{item}</span>)}
+        {['CV', '3D', 'DATA', 'WEB'].map((item) => <span key={item}>{item}</span>)}
       </div>
       <div className="hand-projects" aria-hidden={mode !== "projects"}>
         {projects.map((project) => (
@@ -137,25 +144,12 @@ function ProjectLinks({ project }: { project: Project }) {
 }
 
 function ProjectVisual({ project }: { project: Project }) {
-  if (project.id === "studyrooms") {
-    return (
-      <div className="system-visual" aria-label="StudyRooms architecture diagram">
-        <div className="system-client"><span>MVC</span><span>SPA</span><span>Consumer</span></div>
-        <div className="system-lines"><i /><i /><i /></div>
-        <div className="system-core"><small>SPRING BOOT</small><b>StudyRooms</b><em>services · rules · security</em></div>
-        <div className="system-lines inverse"><i /><i /><i /></div>
-        <div className="system-client bottom"><span>Postgres</span><span>Weather</span><span>Notify</span></div>
-      </div>
-    );
-  }
   return (
     <div className="project-image-wrap">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={project.image} alt={project.imageAlt ?? ""} loading="lazy" />
       <div className="scanline" />
       <span className="image-coordinate">{project.index} / FIELD VIEW</span>
-      {project.id === "aerial-atlas" && <div className="detection-box box-a"><span>flooded area · 0.94</span></div>}
-      {project.id === "aerial-atlas" && <div className="detection-box box-b"><span>vehicle · 0.88</span></div>}
     </div>
   );
 }
@@ -182,6 +176,12 @@ function ProjectChapter({ project, viewMode }: { project: Project; viewMode: Vie
         <div className="tag-row">{project.tags.map((tag) => <span key={tag}>{tag}</span>)}</div>
         <div className="fact-row">{project.facts.map((fact) => <span key={fact}><i />{fact}</span>)}</div>
       </footer>
+      <div className="lab-specs" aria-hidden={viewMode !== "lab"}>
+        <span><small>INPUT</small><b>{project.lab.input}</b></span>
+        <span><small>RUNTIME</small><b>{project.lab.runtime}</b></span>
+        <span><small>DELIVERY</small><b>{project.lab.delivery}</b></span>
+        <span><small>ENGINEERING FOCUS</small><b>{project.lab.focus}</b></span>
+      </div>
     </article>
   );
 }
@@ -203,6 +203,10 @@ export default function Home() {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
+
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent("avatar-view", { detail: viewMode }));
+  }, [viewMode]);
 
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
@@ -230,8 +234,8 @@ export default function Home() {
         </nav>
         <div className="top-actions">
           <div className="view-switch" aria-label="Portfolio view">
-            <button className={viewMode === "overview" ? "active" : ""} onClick={() => setViewMode("overview")}>Overview</button>
-            <button className={viewMode === "lab" ? "active" : ""} onClick={() => setViewMode("lab")}>Lab</button>
+            <button aria-pressed={viewMode === "overview"} className={viewMode === "overview" ? "active" : ""} onClick={() => setViewMode("overview")}>Overview</button>
+            <button aria-pressed={viewMode === "lab"} className={viewMode === "lab" ? "active" : ""} onClick={() => setViewMode("lab")}>Lab</button>
           </div>
           <button className="search-trigger" onClick={() => setPaletteOpen(true)} aria-label="Open portfolio search">⌕ <span>Search</span><kbd>⌘K</kbd></button>
         </div>
@@ -242,7 +246,7 @@ export default function Home() {
         <div className="hero-copy">
           <p className="eyebrow"><i /> Research tooling · 3D systems · software engineering</p>
           <h1>I build tools that make <em>complex systems</em> usable.</h1>
-          <p className="hero-lede">Petros Koutroulis is a research associate and developer working across computer vision, data pipelines, 3D web, and distributed software.</p>
+          <p className="hero-lede">Petros Koutroulis is a research associate and developer working across computer vision, data pipelines, 3D web, and research software.</p>
           <div className="hero-actions">
             <button className="primary-action" onClick={() => scrollToId("selected-work")}>Explore selected work <span>↓</span></button>
             <a href="mailto:peterkoutroulis2004@gmail.com">Start a conversation <span>↗</span></a>
@@ -264,15 +268,19 @@ export default function Home() {
       <section className="manifesto" data-reveal>
         <p>PORTFOLIO / PERSONAL RESEARCH LAB</p>
         <blockquote>“The interface is not decoration. It is how complex work becomes understandable.”</blockquote>
-        <div><span>01 Spatial systems</span><span>02 Perception tooling</span><span>03 Research operations</span><span>04 Distributed software</span></div>
+        <div><span>01 Spatial systems</span><span>02 Perception tooling</span><span>03 Research operations</span></div>
       </section>
 
       <section className="work-section" id="selected-work">
         <header className="section-heading" data-reveal>
           <p>SELECTED WORK <span>2024—NOW</span></p>
           <h2>Built for depth.<br /><em>Designed for use.</em></h2>
-          <p>Four systems, four different ways of turning difficult technical material into something people can inspect, navigate, and act on.</p>
+          <p>Three systems, three different ways of turning difficult technical material into something people can inspect, navigate, and act on.</p>
         </header>
+        <div className="view-explainer" data-reveal>
+          <span>{viewMode === "overview" ? "OVERVIEW MODE" : "LAB MODE"}</span>
+          <p>{viewMode === "overview" ? "Narrative view: the problem, the interface, and the contribution." : "Engineering view: verified inputs, runtime, delivery path, and the constraint each system is designed around."}</p>
+        </div>
         {projects.map((project) => <ProjectChapter key={project.id} project={project} viewMode={viewMode} />)}
       </section>
 
