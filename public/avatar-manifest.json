@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "renderer": "procedural-css-rig",
+  "placeholder": true,
+  "modelPath": null,
+  "scale": 0.92,
+  "orientation": [0, 0, 0],
+  "anchors": {
+    "head": "rig-head",
+    "leftHand": "arm-left .hand",
+    "rightHand": "arm-right .hand",
+    "torso": "rig-torso"
+  },
+  "intents": {
+    "idle": "neutral",
+    "look": "knowledge",
+    "presentRight": "projects",
+    "presentLeft": "research",
+    "identify": "about"
+  },
+  "cameraTargets": {
+    "neutral": [0, 0.5, 4.8],
+    "head": [0, 1.1, 3.4],
+    "leftHand": [-0.8, 0.35, 3.8],
+    "rightHand": [0.8, 0.35, 3.8],
+    "torso": [0, 0.35, 3.6]
+  },
+  "replacementNote": "Replace the procedural rig in app/page.tsx with a mesh, splat, or avatar renderer that consumes these semantic anchors and intent names. Keep the hotspot buttons and HeroMode state contract unchanged."
+}
