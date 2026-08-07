@@ -54,7 +54,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
 
   return (
     <html lang="en">
-      <body>
+      <body suppressHydrationWarning>
         {children}
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
         <script
@@ -63,9 +63,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             __html: JSON.stringify({ imports: { three: "/avatar/vendor/three.module.js" } }),
           }}
         />
-        {/* The import map must be parsed before this local ES module. */}
-        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
-        <script type="module" src="/avatar/avatar-viewer.js" />
       </body>
     </html>
   );

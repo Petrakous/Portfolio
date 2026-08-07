@@ -42,6 +42,15 @@ function AvatarRig({ mode, setMode }: { mode: HeroMode; setMode: (mode: HeroMode
   const activate = (next: HeroMode) => setMode(mode === next ? "neutral" : next);
 
   useEffect(() => {
+    if (document.querySelector("script[data-avatar-runtime]")) return;
+    const runtime = document.createElement("script");
+    runtime.type = "module";
+    runtime.src = "/avatar/avatar-viewer.js";
+    runtime.dataset.avatarRuntime = "true";
+    document.body.append(runtime);
+  }, []);
+
+  useEffect(() => {
     window.dispatchEvent(new CustomEvent("avatar-mode", { detail: mode }));
   }, [mode]);
 
