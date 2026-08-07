@@ -42,6 +42,10 @@ if (mount && !mount.dataset.initialized) {
     let currentView = "overview";
     let pointerX = 0;
     let pointerY = 0;
+    let userYaw = 0;
+    let dragging = false;
+    let dragPointerId = null;
+    let dragX = 0;
     let introStart = performance.now();
     let visible = true;
     let disposed = false;
@@ -158,12 +162,12 @@ if (mount && !mount.dataset.initialized) {
 
     function updatePose(time) {
       const breathe = Math.sin(time * 0.0017) * 0.028;
-      const presentingRight = currentMode === "projects";
-      const presentingLeft = currentMode === "research";
-      poseBone("Skeleton_arm_joint_R", presentingRight ? -1.12 : 0, presentingRight ? -0.12 : 0, 0, 0.075);
-      poseBone("Skeleton_arm_joint_R__2_", presentingRight ? -0.48 : 0, 0, presentingRight ? 0.16 : 0, 0.08);
-      poseBone("Skeleton_arm_joint_L__4_", presentingLeft ? 1.12 : 0, presentingLeft ? 0.12 : 0, 0, 0.075);
-      poseBone("Skeleton_arm_joint_L__3_", presentingLeft ? 0.48 : 0, 0, presentingLeft ? -0.16 : 0, 0.08);
+      const presentingScreenRight = currentMode === "projects";
+      const presentingScreenLeft = currentMode === "research";
+      poseBone("Skeleton_arm_joint_R", presentingScreenLeft ? 0.25 : -0.6, presentingScreenLeft ? -0.08 : 0, 0, 0.075);
+      poseBone("Skeleton_arm_joint_R__2_", presentingScreenLeft ? 0.82 : 0.12, 0, presentingScreenLeft ? 0.1 : 0, 0.08);
+      poseBone("Skeleton_arm_joint_L__4_", presentingScreenRight ? -0.25 : 0.6, presentingScreenRight ? 0.08 : 0, 0, 0.075);
+      poseBone("Skeleton_arm_joint_L__3_", presentingScreenRight ? -0.82 : -0.12, 0, presentingScreenRight ? -0.1 : 0, 0.08);
       poseBone("Skeleton_neck_joint_1", currentMode === "knowledge" ? pointerY * 0.16 : breathe, currentMode === "knowledge" ? pointerX * 0.28 : pointerX * 0.05, 0, 0.06);
       poseBone("Skeleton_torso_joint_2", currentMode === "about" ? -0.06 : breathe * 0.4, pointerX * 0.025, 0, 0.04);
     }
@@ -245,7 +249,7 @@ if (mount && !mount.dataset.initialized) {
         const eased = 1 - Math.pow(1 - intro, 4);
         camera.position.z = THREE.MathUtils.lerp(farCameraZ, closeCameraZ, eased);
         camera.position.y = THREE.MathUtils.lerp(0.55, 0.18, eased);
-        root.rotation.y = Math.PI * 0.5 + (1 - eased) * (-Math.PI * 2.1) + Math.sin(time * 0.00018) * 0.13;
+        root.rotation.y = -Math.PI * 0.5 + userYaw + (1 - eased) * (-Math.PI * 2.1) + (dragging ? 0 : Math.sin(time * 0.00018) * 0.06);
         root.rotation.x = pointerY * 0.025;
         const framingOffset = camera.aspect > 0.9 ? -0.7 : -0.18;
         root.position.x = framingOffset + pointerX * 0.05;
@@ -262,6 +266,26 @@ if (mount && !mount.dataset.initialized) {
       pointerX = ((event.clientX - rect.left) / rect.width - 0.5) * 2;
       pointerY = ((event.clientY - rect.top) / rect.height - 0.5) * 2;
     });
+    renderer.domElement.addEventListener("pointerdown", (event) => {
+      dragging = true;
+      dragPointerId = event.pointerId;
+      dragX = event.clientX;
+      renderer.domElement.setPointerCapture(event.pointerId);
+      stage?.classList.add("is-rotating");
+    });
+    renderer.domElement.addEventListener("pointermove", (event) => {
+      if (!dragging || event.pointerId !== dragPointerId) return;
+      userYaw += (event.clientX - dragX) * 0.009;
+      dragX = event.clientX;
+    });
+    const endDrag = (event) => {
+      if (!dragging || event.pointerId !== dragPointerId) return;
+      dragging = false;
+      dragPointerId = null;
+      stage?.classList.remove("is-rotating");
+    };
+    renderer.domElement.addEventListener("pointerup", endDrag);
+    renderer.domElement.addEventListener("pointercancel", endDrag);
     document.addEventListener("visibilitychange", () => { visible = !document.hidden; });
     renderer.domElement.addEventListener("webglcontextlost", () => {
       stage?.classList.remove("is-webgl-ready");

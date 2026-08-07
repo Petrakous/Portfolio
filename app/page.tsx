@@ -58,6 +58,7 @@ function AvatarRig({ mode, setMode }: { mode: HeroMode; setMode: (mode: HeroMode
     <div className="avatar-stage" data-state={mode} aria-label="Interactive portfolio navigation">
       <div className="avatar-webgl" data-avatar-webgl>
         <span className="avatar-load-status" data-avatar-status>INITIALISING 3D SPLAT PROXY</span>
+        <span className="avatar-rotate-hint">DRAG MODEL TO ROTATE ↔</span>
       </div>
       <div className="orbit orbit-a" />
       <div className="orbit orbit-b" />
@@ -77,7 +78,7 @@ function AvatarRig({ mode, setMode }: { mode: HeroMode; setMode: (mode: HeroMode
         <div className="rig-leg leg-right"><i className="upper" /><i className="lower" /></div>
       </div>
 
-      <div className="avatar-controls" aria-label="Explore portfolio signals">
+      <div className="avatar-controls" aria-label="Explore the avatar">
         <button className="hotspot hotspot-head" onClick={() => activate("knowledge")} aria-pressed={mode === "knowledge"}>
           <span>01</span> Knowledge
         </button>
