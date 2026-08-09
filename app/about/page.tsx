@@ -1,6 +1,6 @@
 import { getPortfolioSection } from "../portfolio-data";
 import { SectionPage } from "../section-page";
 
-export default function WorkPage() {
-  return <SectionPage section={getPortfolioSection("work")} />;
+export default function AboutPage() {
+  return <SectionPage section={getPortfolioSection("about")} />;
 }

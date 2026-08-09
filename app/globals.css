@@ -61,6 +61,56 @@ a { text-decoration: none; }
 .signal-card i { color: var(--red); font-style: normal; }
 .signal-close { position: absolute; z-index: 2; top: 1rem; right: 1rem; width: 30px; height: 30px; border: 1px solid var(--line); background: rgba(7,7,7,.5); color: var(--muted); cursor: pointer; }
 
+.signal-deck { position: relative; height: 318px; margin-top: 1.2rem; perspective: 900px; }
+.signal-slide { position: absolute; inset: 0; display: flex; flex-direction: column; padding: .7rem; border: 1px solid rgba(255,255,255,.11); background: rgba(8,8,8,.92); box-shadow: 0 18px 50px rgba(0,0,0,.4); transition: transform .4s ease, opacity .35s, filter .35s; }
+.signal-slide.is-active { z-index: 3; inset: 0 14px; transform: translateZ(18px); opacity: 1; }
+.signal-slide.is-prev { z-index: 1; transform: translate3d(-30px,8px,-45px) rotateY(3deg) scale(.96); opacity: .42; filter: blur(2px); }
+.signal-slide.is-next { z-index: 2; transform: translate3d(30px,8px,-45px) rotateY(-3deg) scale(.96); opacity: .42; filter: blur(2px); }
+.signal-slide.is-hidden { transform: translateZ(-80px) scale(.9); opacity: 0; pointer-events: none; }
+.signal-slide-visual { position: relative; height: 112px; flex: 0 0 112px; margin-bottom: 1rem; overflow: hidden; background: radial-gradient(circle at 68% 30%, rgba(238,52,52,.3), transparent 24%), linear-gradient(135deg,#1b1111,#090909 68%); }
+.signal-slide-visual::after, .portfolio-card-visual::after { content: ""; position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px); background-size: 22px 22px; mask-image: linear-gradient(135deg,black,transparent 76%); pointer-events: none; }
+.signal-slide-visual img { width: 100%; height: 100%; object-fit: cover; filter: saturate(.8) contrast(1.05); }
+.signal-slide-visual b { position: absolute; right: .8rem; bottom: .3rem; color: rgba(255,255,255,.1); font: 500 4rem/1 monospace; }
+.signal-slide small { color: var(--red); font: 700 .59rem monospace; letter-spacing: .11em; text-transform: uppercase; }
+.signal-slide h1 { margin: .55rem 0 .4rem; font-size: 1.55rem; line-height: 1; }
+.signal-slide p { font-size: .78rem; line-height: 1.45; }
+.signal-slide-tags { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: auto; padding-top: .65rem; }
+.signal-slide-tags i { border: 1px solid var(--line); padding: .28rem .4rem; color: #bbb5ae; font: 600 .54rem monospace; font-style: normal; }
+.signal-deck-controls { position: relative; display: grid; grid-template-columns: 36px 1fr 36px; align-items: center; gap: .6rem; margin-top: .85rem; }
+.signal-deck-controls button { height: 34px; border: 1px solid var(--line); background: rgba(255,255,255,.025); color: white; cursor: pointer; }
+.signal-deck-controls button:hover, .signal-deck-controls button:focus-visible { border-color: var(--red); background: rgba(238,52,52,.12); }
+.signal-deck-controls span { color: var(--muted); text-align: center; font: 700 .58rem monospace; letter-spacing: .12em; }
+.signal-card .signal-more { display: flex; justify-content: space-between; margin-top: .85rem; }
+
+/* Card index pages */
+.section-index { min-height: 100vh; background: radial-gradient(circle at 72% 12%,rgba(238,52,52,.09),transparent 24%),var(--black); }
+.section-index-header { position: sticky; z-index: 20; top: 0; display: flex; justify-content: space-between; align-items: center; min-height: 68px; padding: 0 4vw; border-bottom: 1px solid var(--line); background: rgba(7,7,7,.88); backdrop-filter: blur(18px); }
+.section-index-header a, .section-index-header p { margin: 0; color: #c8c2bb; font: 700 .64rem monospace; letter-spacing: .12em; }
+.section-index-intro { display: grid; min-height: 46vh; align-content: end; padding: 8vw 8vw 5vw; border-bottom: 1px solid var(--line); }
+.section-index-intro span { color: var(--red); font: 700 .66rem monospace; letter-spacing: .16em; text-transform: uppercase; }
+.section-index-intro h1 { max-width: 10ch; margin: 1.2rem 0; font-size: clamp(3.8rem,8vw,9rem); font-weight: 520; line-height: .82; letter-spacing: -.075em; }
+.section-index-intro p { max-width: 50ch; margin: 0; color: var(--muted); line-height: 1.55; }
+.card-group { padding: 5rem 4vw; border-bottom: 1px solid var(--line); }
+.card-group > header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2rem; }
+.card-group > header h2 { margin: 0; font-size: clamp(1.5rem,2.5vw,2.8rem); font-weight: 520; letter-spacing: -.04em; }
+.card-group > header span { color: var(--red); font: 700 .68rem monospace; }
+.portfolio-card-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+.portfolio-card { min-width: 0; min-height: 430px; display: flex; flex-direction: column; padding: 1rem; background: #090909; transition: background .25s, transform .25s; }
+.portfolio-card:hover { position: relative; z-index: 2; background: #0e0b0b; transform: translateY(-3px); }
+.portfolio-card-visual { position: relative; height: 180px; margin-bottom: 1.35rem; overflow: hidden; background: radial-gradient(circle at 70% 25%,rgba(238,52,52,.28),transparent 24%),linear-gradient(135deg,#1d1111,#090909 68%); }
+.portfolio-card-visual img { width: 100%; height: 100%; object-fit: cover; filter: saturate(.78) contrast(1.06); }
+.portfolio-card-visual b { position: absolute; right: 1rem; bottom: .35rem; color: rgba(255,255,255,.09); font: 500 5rem/1 monospace; }
+.portfolio-card small { color: var(--red); font: 700 .59rem monospace; letter-spacing: .12em; text-transform: uppercase; }
+.portfolio-card h3 { margin: .8rem 0 .65rem; font-size: clamp(1.5rem,2.2vw,2.35rem); line-height: .95; letter-spacing: -.045em; }
+.portfolio-card p { margin: 0; color: #aaa49d; font-size: .84rem; line-height: 1.55; }
+.portfolio-card em { margin-top: .8rem; color: #d0cac3; font: 600 .64rem/1.45 monospace; font-style: normal; }
+.portfolio-card > div:last-child { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: auto; padding-top: 1.2rem; }
+.portfolio-card i { border: 1px solid var(--line); padding: .3rem .43rem; color: #bbb5ae; font: 600 .56rem monospace; font-style: normal; }
+.section-index-footer { display: flex; justify-content: space-between; align-items: center; gap: 2rem; padding: 5rem 4vw; background: var(--red); color: white; }
+.section-index-footer p { margin: 0; font-size: clamp(1.4rem,3vw,3rem); letter-spacing: -.04em; }
+.section-index-footer div { display: flex; flex-wrap: wrap; gap: 1rem; }
+.section-index-footer a { border-bottom: 1px solid rgba(255,255,255,.5); padding-bottom: .25rem; font: 700 .65rem monospace; }
+
 /* Separate selected-work page */
 .work-index { min-height: 100vh; background: var(--black); }
 .work-index-header { position: sticky; z-index: 20; top: 0; display: flex; justify-content: space-between; align-items: center; min-height: 72px; padding: 0 4vw; border-bottom: 1px solid var(--line); background: rgba(7,7,7,.88); backdrop-filter: blur(18px); }
@@ -96,6 +146,12 @@ a { text-decoration: none; }
   .hotspot { font-size: .58rem; }
   .signal-card, .signal-card.side-left, .signal-card.side-right { top: auto; right: 20px; bottom: 20px; left: 20px; width: auto; min-height: 0; padding: 1.4rem; transform: translateY(12px) scale(.98); }
   .signal-card.is-open { transform: none; }
+  .signal-card { max-height: calc(100svh - 40px); overflow: auto; }
+  .signal-deck { height: 300px; }.signal-slide-visual { height: 100px; flex-basis: 100px; }
+  .section-index-header { padding: 0 1rem; }
+  .section-index-intro { min-height: 42vh; padding: 7rem 1rem 3rem; }.section-index-intro h1 { font-size: 16vw; }
+  .card-group { padding: 4rem 1rem; }.portfolio-card-grid { grid-template-columns: 1fr; }.portfolio-card { min-height: 390px; }
+  .section-index-footer { align-items: flex-start; flex-direction: column; padding: 4rem 1rem; }
   .work-index-header { padding: 0 1rem; }.work-index-header span { display: none; }
   .work-intro { min-height: 65vh; padding: 6rem 1rem; }.work-intro h1 { font-size: 18vw; }
   .work-list { padding: 0 1rem; }.work-list article { display: flex; flex-direction: column; gap: 1.5rem; min-height: 0; padding: 5rem 0; }

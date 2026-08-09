@@ -20,17 +20,14 @@ test("server-renders the fullscreen 3D index", async () => {
   assert.match(html, /Petros Koutroulis/i);
   assert.match(html, /Research Associate/i);
   assert.match(html, /Knowledge/i);
-  assert.match(html, /Research/i);
+  assert.match(html, /Credentials/i);
   assert.match(html, /Work/i);
   assert.match(html, /About/i);
-  assert.doesNotMatch(html, /I build tools that make/i);
-  assert.doesNotMatch(html, /available for select collaborations/i);
-  assert.doesNotMatch(html, /Search portfolio/i);
-  assert.doesNotMatch(html, /StudyRooms/i);
+  assert.doesNotMatch(html, /I build tools that make|available for select collaborations|Search portfolio/i);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape|react-loading-skeleton/i);
 });
 
-test("server-renders selected work on its own route", async () => {
+test("server-renders the curated work card index", async () => {
   const response = await render("/work");
   assert.equal(response.status, 200);
   const html = await response.text();
@@ -38,13 +35,30 @@ test("server-renders selected work on its own route", async () => {
   assert.match(html, /3DHUA/i);
   assert.match(html, /Aerial Detection Atlas/i);
   assert.match(html, /TRIFFID Review Studio/i);
-  assert.doesNotMatch(html, /StudyRooms/i);
+  assert.match(html, /StudyRooms/i);
+  assert.match(html, /Chicago Crime Analytics/i);
+  assert.match(html, /Early years/i);
+  assert.match(html, /Other experience/i);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape|react-loading-skeleton/i);
 });
 
+test("server-renders credentials, knowledge, and about card routes", async () => {
+  const credentials = await render("/credentials");
+  const knowledge = await render("/knowledge");
+  const about = await render("/about");
+  assert.equal(credentials.status, 200);
+  assert.equal(knowledge.status, 200);
+  assert.equal(about.status, 200);
+  assert.match(await credentials.text(), /English Proficiency/i);
+  assert.match(await knowledge.text(), /Knowledge, with evidence/i);
+  assert.match(await about.text(), /Snow &amp; Mountains/i);
+});
+
 test("does not publish private CV fields", async () => {
-  const response = await render("/work");
-  const html = await response.text();
-  assert.doesNotMatch(html, /6955413061|Ψηλορείτη|20\/09\/2004|Αμαρούσιο Αττικής/i);
-  assert.match(html, /peterkoutroulis2004@gmail\.com/i);
+  for (const path of ["/work", "/credentials", "/knowledge", "/about"]) {
+    const response = await render(path);
+    const html = await response.text();
+    assert.doesNotMatch(html, /6955413061|20\/09\/2004|16562|Ψηλορείτη|Αμαρούσιο Αττικής/i);
+    assert.match(html, /peterkoutroulis2004@gmail\.com/i);
+  }
 });
