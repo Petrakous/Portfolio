@@ -28,7 +28,7 @@ function AvatarStage({ active, setActive }: { active: SignalId | null; setActive
       <div className="avatar-controls" aria-label="Explore the portfolio">
         {homeCopy.signals.map((signal) => (
           <button key={signal.id} className={`hotspot hotspot-${signal.id}`} onClick={() => activate(signal.id)} aria-pressed={active === signal.id}>
-            <span>{signal.index}</span>{signal.label}
+            <span>{signal.index}</span>{signal.label}<i aria-hidden="true">{signal.icon}</i>
           </button>
         ))}
       </div>
@@ -83,7 +83,7 @@ export default function Home() {
 
   return (
     <main className="cinematic-home">
-      <header className="home-identity"><p>{homeCopy.name}</p><span>{homeCopy.role}</span></header>
+      <header className="home-identity"><p>{homeCopy.name}</p></header>
       <AvatarStage active={active} setActive={changeActive} />
 
       <aside className={`signal-card ${signal ? `is-open side-${signal.side}` : ""} ${isSwitching ? "is-switching" : ""}`} aria-live="polite" aria-hidden={!section}>

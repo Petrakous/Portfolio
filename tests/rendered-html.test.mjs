@@ -18,7 +18,7 @@ test("server-renders the fullscreen 3D index", async () => {
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
   const html = await response.text();
   assert.match(html, /Petros Koutroulis/i);
-  assert.match(html, /Research Associate/i);
+  assert.match(html, /<header class="home-identity"><p>Petros Koutroulis<\/p><\/header>/i);
   assert.match(html, /Knowledge/i);
   assert.match(html, /Credentials/i);
   assert.match(html, /Work/i);

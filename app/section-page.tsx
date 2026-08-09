@@ -3,6 +3,13 @@
 import { useEffect, useState } from "react";
 import type { PortfolioCard, PortfolioSection } from "./portfolio-data";
 
+const sectionIcons: Record<PortfolioSection["id"], string> = {
+  knowledge: "◇",
+  research: "✓",
+  work: "↗",
+  about: "○",
+};
+
 export function SectionPage({ section }: { section: PortfolioSection }) {
   const groups = [...new Set(section.cards.map((card) => card.group))];
   const [selectedCard, setSelectedCard] = useState<PortfolioCard | null>(null);
@@ -31,6 +38,7 @@ export function SectionPage({ section }: { section: PortfolioSection }) {
       </header>
 
       <section className="section-index-intro">
+        <i className="section-index-icon" aria-hidden="true">{sectionIcons[section.id]}</i>
         <span>{section.label}</span>
         <h1>{section.title}</h1>
         <p>{section.intro}</p>
