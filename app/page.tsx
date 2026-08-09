@@ -55,7 +55,7 @@ export default function Home() {
     setCardIndex((current) => (current + direction + visibleCards.length) % visibleCards.length);
   };
   const beginCarouselDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
-    if (event.button !== 0 || (event.target as HTMLElement).closest(".signal-deck-controls")) return;
+    if (event.button !== 0) return;
     event.stopPropagation();
     carouselDragStart.current = event.clientX;
     suppressCardClick.current = false;
@@ -179,10 +179,6 @@ export default function Home() {
                   />
                 </article>
               ))}
-              <div className="signal-deck-controls">
-                <button onClick={() => moveCard(-1)} aria-label="Previous card">←</button>
-                <button onClick={() => moveCard(1)} aria-label="Next card">→</button>
-              </div>
             </div>
             <div className="signal-deck-footer">
               <span>{String(cardIndex + 1).padStart(2, "0")} / {String(visibleCards.length).padStart(2, "0")}</span>

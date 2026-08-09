@@ -77,11 +77,6 @@ a { text-decoration: none; }
 .signal-slide-open { position: absolute; z-index: 5; inset: 0; border: 0; background: transparent; cursor: pointer; pointer-events: auto; }
 .signal-slide-open:focus-visible { outline: 2px solid var(--red); outline-offset: -4px; }
 .signal-card.is-switching .signal-slide-open { pointer-events: none; }
-.signal-deck-controls { position: absolute; z-index: 8; inset: 0; pointer-events: none; }
-.signal-deck-controls button { position: absolute; top: 50%; width: 42px; height: 42px; transform: translateY(-50%); border: 1px solid rgba(255,255,255,.22); background: rgba(7,7,7,.78); color: white; cursor: pointer; pointer-events: auto; backdrop-filter: blur(12px); }
-.signal-deck-controls button:first-child { left: 0; }
-.signal-deck-controls button:last-child { right: 0; }
-.signal-deck-controls button:hover, .signal-deck-controls button:focus-visible { border-color: var(--red); background: rgba(238,52,52,.12); }
 .signal-deck-footer { position: relative; z-index: 8; display: flex; width: min(370px,44vw); margin: .8rem auto 0; justify-content: space-between; align-items: center; pointer-events: auto; }
 .signal-deck-footer > span { color: var(--muted); font: 700 .58rem monospace; letter-spacing: .12em; }
 .signal-card .signal-more { margin: 0; }
