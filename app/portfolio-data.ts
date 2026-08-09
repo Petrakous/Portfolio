@@ -10,6 +10,7 @@ export type PortfolioCard = {
   imageAlt?: string;
   tags: string[];
   group: string;
+  links?: { label: string; href: string }[];
 };
 
 export type PortfolioSection = {
@@ -73,8 +74,8 @@ export const portfolioSections: PortfolioSection[] = [
     href: "/work",
     side: "right",
     cards: [
-      { id: "3dhua", title: "3DHUA", kicker: "Spatial computing", summary: "A browser-native campus experience combining 3D scenes, Gaussian splats and progressive delivery.", image: "/media/3dhua-campus.webp", imageAlt: "3DHUA campus reconstruction", tags: ["3D Web", "3DGS"], group: "Flagship work" },
-      { id: "aerial-atlas", title: "Aerial Detection Atlas", kicker: "Computer Vision", summary: "An interactive surface for comparing ground truth with model detections across aerial datasets.", image: "/media/aerial-detection.jpg", imageAlt: "Aerial model detection preview", tags: ["Evaluation", "Visual QA"], group: "Flagship work" },
+      { id: "3dhua", title: "3DHUA", kicker: "Spatial computing", summary: "A browser-native campus experience combining 3D scenes, Gaussian splats and progressive delivery.", image: "/media/3dhua-campus.webp", imageAlt: "3DHUA campus reconstruction", tags: ["3D Web", "3DGS"], group: "Flagship work", links: [{ label: "View repository", href: "https://github.com/Petrakous/Hua-3D-Showcase" }] },
+      { id: "aerial-atlas", title: "Aerial Detection Atlas", kicker: "Computer Vision", summary: "An interactive surface for comparing ground truth with model detections across aerial datasets.", image: "/media/aerial-detection.jpg", imageAlt: "Aerial model detection preview", tags: ["Evaluation", "Visual QA"], group: "Flagship work", links: [{ label: "View repository", href: "https://github.com/Petrakous/Aerial-Detection-Atlas" }] },
       { id: "triffid-review", title: "TRIFFID Review Studio", kicker: "Research operations", summary: "An end-to-end workflow for source review, frame selection, crop audit and traceable exports.", image: "/media/triffid-frame-selection.png", imageAlt: "TRIFFID frame review interface", tags: ["Curation", "Automation"], group: "Flagship work" },
       { id: "studyrooms", title: "StudyRooms", kicker: "Distributed systems", summary: "A reservation platform exploring Spring services, authentication, persistence and multi-process delivery.", image: demoImages.servers, imageAlt: "Server rack and network infrastructure", tags: ["Spring Boot", "REST", "Docker"], group: "Systems & university" },
       { id: "chicago-data", title: "Chicago Crime Analytics", kicker: "Data systems", summary: "A 1.99 GB analysis workflow carried from pandas into Docker and a Spark master/worker cluster.", image: demoImages.code, imageAlt: "Data code displayed on a monitor", tags: ["Spark", "Parquet", "Docker"], group: "Systems & university" },

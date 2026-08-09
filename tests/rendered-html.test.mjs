@@ -39,6 +39,8 @@ test("server-renders the curated work card index", async () => {
   assert.match(html, /Chicago Crime Analytics/i);
   assert.match(html, /Early years/i);
   assert.match(html, /Other experience/i);
+  assert.match(html, /Open details for 3DHUA/i);
+  assert.doesNotMatch(html, /Enough to understand/i);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape|react-loading-skeleton/i);
 });
 
@@ -49,8 +51,12 @@ test("server-renders credentials, knowledge, and about card routes", async () =>
   assert.equal(credentials.status, 200);
   assert.equal(knowledge.status, 200);
   assert.equal(about.status, 200);
-  assert.match(await credentials.text(), /English Proficiency/i);
-  assert.match(await knowledge.text(), /Knowledge, with evidence/i);
+  const credentialsHtml = await credentials.text();
+  const knowledgeHtml = await knowledge.text();
+  assert.match(credentialsHtml, /English Proficiency/i);
+  assert.match(credentialsHtml, /card-count-1/i);
+  assert.match(knowledgeHtml, /Knowledge, with evidence/i);
+  assert.match(knowledgeHtml, /is-scrollable/i);
   assert.match(await about.text(), /Snow &amp; Mountains/i);
 });
 
