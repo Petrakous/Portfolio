@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import { getPortfolioSection, type PortfolioCard } from "./portfolio-data";
 import { homeCopy, type SignalId } from "./site-copy";
 
@@ -41,7 +41,11 @@ export default function Home() {
   const [cardIndex, setCardIndex] = useState(0);
   const [isSwitching, setIsSwitching] = useState(false);
   const [selectedCard, setSelectedCard] = useState<PortfolioCard | null>(null);
+  const [carouselDrag, setCarouselDrag] = useState(0);
+  const [isDraggingCarousel, setIsDraggingCarousel] = useState(false);
   const transitionTimer = useRef<number | null>(null);
+  const carouselDragStart = useRef<number | null>(null);
+  const suppressCardClick = useRef(false);
   const signal = homeCopy.signals.find((item) => item.id === active);
   const section = active ? getPortfolioSection(active) : null;
   const visibleCards = section?.cards.slice(0, 5) ?? [];
@@ -49,6 +53,48 @@ export default function Home() {
   const moveCard = (direction: number) => {
     if (!visibleCards.length) return;
     setCardIndex((current) => (current + direction + visibleCards.length) % visibleCards.length);
+  };
+  const beginCarouselDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.button !== 0 || (event.target as HTMLElement).closest(".signal-deck-controls")) return;
+    event.stopPropagation();
+    carouselDragStart.current = event.clientX;
+    suppressCardClick.current = false;
+    setIsDraggingCarousel(true);
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+  const updateCarouselDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (carouselDragStart.current === null) return;
+    event.stopPropagation();
+    const distance = event.clientX - carouselDragStart.current;
+    if (Math.abs(distance) > 6) suppressCardClick.current = true;
+    setCarouselDrag(Math.max(-180, Math.min(180, distance)));
+  };
+  const endCarouselDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (carouselDragStart.current === null) return;
+    event.stopPropagation();
+    const distance = event.clientX - carouselDragStart.current;
+    carouselDragStart.current = null;
+    setCarouselDrag(0);
+    setIsDraggingCarousel(false);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    if (Math.abs(distance) >= 55) moveCard(distance < 0 ? 1 : -1);
+    window.setTimeout(() => { suppressCardClick.current = false; }, 0);
+  };
+  const cancelCarouselDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (carouselDragStart.current === null) return;
+    carouselDragStart.current = null;
+    suppressCardClick.current = false;
+    setCarouselDrag(0);
+    setIsDraggingCarousel(false);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+  };
+  const activateCarouselCard = (card: PortfolioCard, index: number) => {
+    if (suppressCardClick.current) {
+      suppressCardClick.current = false;
+      return;
+    }
+    if (index === cardIndex) setSelectedCard(card);
+    else setCardIndex(index);
   };
   const cardPosition = (index: number) => {
     const distance = (index - cardIndex + visibleCards.length) % visibleCards.length;
@@ -103,7 +149,15 @@ export default function Home() {
               <span>{signal.index} / {signal.label}</span>
               <button className="signal-close" onClick={() => changeActive(null)} aria-label="Close information">×</button>
             </div>
-            <div className="signal-deck" aria-label={`${signal.label} highlights`}>
+            <div
+              className={`signal-deck ${isDraggingCarousel ? "is-dragging" : ""}`}
+              aria-label={`${signal.label} highlights`}
+              style={{ "--deck-drag": `${carouselDrag}px` } as CSSProperties}
+              onPointerDown={beginCarouselDrag}
+              onPointerMove={updateCarouselDrag}
+              onPointerUp={endCarouselDrag}
+              onPointerCancel={cancelCarouselDrag}
+            >
               {visibleCards.map((card, index) => (
                 <article className={`signal-slide ${cardPosition(index)}`} key={card.id} aria-hidden={index !== cardIndex}>
                   <div className={`signal-slide-visual ${card.image ? "has-image" : "is-abstract"}`}>
@@ -115,12 +169,14 @@ export default function Home() {
                   <h1>{card.title}</h1>
                   <p>{card.summary}</p>
                   <div className="signal-slide-tags">{card.tags.slice(0, 3).map((tag) => <i key={tag}>{tag}</i>)}</div>
-                  {index === cardIndex && (
-                    <>
-                      <span className="signal-slide-hint">View details ↗</span>
-                      <button className="signal-slide-open" type="button" onClick={() => setSelectedCard(card)} aria-label={`Open details for ${card.title}`} />
-                    </>
-                  )}
+                  {index === cardIndex && <span className="signal-slide-hint">View details ↗</span>}
+                  <button
+                    className="signal-slide-open"
+                    type="button"
+                    tabIndex={index === cardIndex ? 0 : -1}
+                    onClick={() => activateCarouselCard(card, index)}
+                    aria-label={index === cardIndex ? `Open details for ${card.title}` : `Show ${card.title}`}
+                  />
                 </article>
               ))}
               <div className="signal-deck-controls">
