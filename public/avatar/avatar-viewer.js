@@ -26,7 +26,7 @@ if (mount && !mount.dataset.initialized) {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(31, 1, 0.05, 100);
     let closeCameraZ = compact ? 6.1 : 5.7;
-    let farCameraZ = closeCameraZ + 7;
+    let farCameraZ = closeCameraZ + viewerConfig.intro.farPadding;
     camera.position.set(0, reducedMotion ? 0.18 : 0.55, reducedMotion ? closeCameraZ : farCameraZ);
 
     const key = new THREE.DirectionalLight(0xfff4e8, 2.5);
@@ -76,6 +76,9 @@ if (mount && !mount.dataset.initialized) {
     let renderedHeight = 0;
     let introStart = performance.now();
     let introComplete = false;
+    let liveCameraRadius = farCameraZ;
+    let liveCameraAngle = -Math.PI * viewerConfig.intro.orbitTurns;
+    let liveCameraElevation = 0.24;
     let visible = true;
     let disposed = false;
     const bones = new Map();
@@ -205,8 +208,8 @@ if (mount && !mount.dataset.initialized) {
       poseBone("Skeleton_arm_joint_L__3_", presentingLeftArm ? -0.82 : -0.12, 0, presentingLeftArm ? -0.1 : 0, 0.08);
       // CesiumMan's neck bones use local X for yaw and local Y for pitch.
       // Split the movement across both joints to avoid a mechanical hinge look.
-      poseBone("Skeleton_neck_joint_1", lookX * viewerConfig.headTracking.yaw * 0.36, -lookY * viewerConfig.headTracking.pitch * 0.4, 0, 0.055);
-      poseBone("Skeleton_neck_joint_2", lookX * viewerConfig.headTracking.yaw * 0.64, -lookY * viewerConfig.headTracking.pitch * 0.6, 0, 0.07);
+      poseBone("Skeleton_neck_joint_1", lookX * viewerConfig.headTracking.yaw * 0.36, lookY * viewerConfig.headTracking.pitch * 0.4, 0, 0.075);
+      poseBone("Skeleton_neck_joint_2", lookX * viewerConfig.headTracking.yaw * 0.64, lookY * viewerConfig.headTracking.pitch * 0.6, 0, 0.09);
       poseBone("Skeleton_torso_joint_2", currentMode === "about" ? -0.06 : breathe * 0.4, 0, 0, 0.04);
     }
 
@@ -291,10 +294,11 @@ if (mount && !mount.dataset.initialized) {
         const fittedSize = fittedBounds.getSize(new THREE.Vector3());
         const verticalFov = THREE.MathUtils.degToRad(camera.fov);
         closeCameraZ = Math.max(5.2, (fittedSize.y * 0.5) / Math.tan(verticalFov * 0.5) * 1.18);
-        closeCameraZ = THREE.MathUtils.clamp(closeCameraZ, viewerConfig.orbit.minDistance, viewerConfig.orbit.maxDistance);
+        closeCameraZ = THREE.MathUtils.clamp(closeCameraZ + viewerConfig.orbit.restPadding, viewerConfig.orbit.minDistance, viewerConfig.orbit.maxDistance);
         farCameraZ = closeCameraZ + viewerConfig.intro.farPadding;
         orbitDistance = closeCameraZ;
         targetDistance = closeCameraZ;
+        liveCameraRadius = reducedMotion ? closeCameraZ : farCameraZ;
         if (reducedMotion) camera.position.z = closeCameraZ;
 
         let sourceMesh = null;
@@ -358,7 +362,7 @@ if (mount && !mount.dataset.initialized) {
         let radius;
         let cameraAngle;
         let cameraElevation;
-        if (intro < 1) {
+        if (!introComplete) {
           radius = THREE.MathUtils.lerp(farCameraZ, closeCameraZ, eased);
           cameraAngle = THREE.MathUtils.lerp(-Math.PI * viewerConfig.intro.orbitTurns, 0, eased);
           cameraElevation = THREE.MathUtils.lerp(0.24, viewerConfig.orbit.initialElevation, eased);
@@ -370,6 +374,9 @@ if (mount && !mount.dataset.initialized) {
           cameraAngle = orbitAzimuth;
           cameraElevation = orbitElevation;
         }
+        liveCameraRadius = radius;
+        liveCameraAngle = cameraAngle;
+        liveCameraElevation = cameraElevation;
         const horizontalRadius = Math.cos(cameraElevation) * radius;
         camera.position.x = Math.sin(cameraAngle) * horizontalRadius;
         camera.position.z = Math.cos(cameraAngle) * horizontalRadius;
@@ -393,8 +400,19 @@ if (mount && !mount.dataset.initialized) {
       pointerX = ((event.clientX - rect.left) / rect.width - 0.5) * 2;
       pointerY = ((event.clientY - rect.top) / rect.height - 0.5) * 2;
     });
+    const releaseIntro = () => {
+      if (introComplete) return;
+      introComplete = true;
+      orbitDistance = liveCameraRadius;
+      targetDistance = liveCameraRadius;
+      orbitAzimuth = liveCameraAngle;
+      targetAzimuth = liveCameraAngle;
+      orbitElevation = liveCameraElevation;
+      targetElevation = liveCameraElevation;
+      stage?.classList.add("is-intro-complete");
+    };
     renderer.domElement.addEventListener("pointerdown", (event) => {
-      if (!introComplete) return;
+      releaseIntro();
       dragging = true;
       dragPointerId = event.pointerId;
       dragX = event.clientX;
@@ -424,7 +442,7 @@ if (mount && !mount.dataset.initialized) {
     renderer.domElement.addEventListener("pointerup", endDrag);
     renderer.domElement.addEventListener("pointercancel", endDrag);
     renderer.domElement.addEventListener("wheel", (event) => {
-      if (!introComplete) return;
+      releaseIntro();
       event.preventDefault();
       targetDistance = THREE.MathUtils.clamp(
         targetDistance + event.deltaY * viewerConfig.orbit.zoomSpeed,

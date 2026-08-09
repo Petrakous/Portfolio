@@ -37,12 +37,12 @@ a { text-decoration: none; }
 .avatar-stage.is-intro-complete .hotspot { opacity: 1; pointer-events: auto; transform: translate3d(var(--label-x,-999px),var(--label-y,-999px),0) translate(-50%,-50%); }
 .hotspot[data-anchor-visible="false"] { opacity: 0 !important; pointer-events: none !important; }
 .hotspot span { display: grid; place-items: center; width: 25px; height: 25px; border: 1px solid rgba(255,255,255,.25); border-radius: 50%; color: white; font-size: .58rem; }
-.hotspot::after { content: ""; position: absolute; top: 50%; width: clamp(28px,4vw,72px); height: 1px; background: linear-gradient(90deg, var(--line), rgba(238,52,52,.7)); }
+.hotspot::after { content: ""; position: absolute; top: 50%; width: clamp(44px,6vw,104px); height: 1px; }
 .avatar-stage.is-intro-complete .hotspot:hover, .avatar-stage.is-intro-complete .hotspot:focus-visible, .avatar-stage.is-intro-complete .hotspot[aria-pressed="true"] { color: white; background: rgba(238,52,52,.12); transform: translate3d(var(--label-x,-999px),calc(var(--label-y,-999px) - 2px),0) translate(-50%,-50%) scale(1.03); outline: 1px solid rgba(238,52,52,.55); }
 .hotspot[aria-pressed="true"] span { border-color: var(--red); background: var(--red); }
 .hotspot[aria-pressed="true"] { z-index: 12; box-shadow: 0 10px 32px rgba(0,0,0,.42); }
-.hotspot-knowledge::after, .hotspot-research::after, .hotspot-about::after { right: calc(100% + 5px); }
-.hotspot-work::after { left: calc(100% + 5px); }
+.hotspot-knowledge::after, .hotspot-research::after, .hotspot-about::after { right: calc(100% - 3px); background: linear-gradient(90deg, transparent 0, rgba(238,52,52,.42) 26%, var(--line) 100%); }
+.hotspot-work::after, .hotspot-research[aria-pressed="true"]::after { right: auto; left: calc(100% - 3px); background: linear-gradient(90deg, var(--line) 0, rgba(238,52,52,.48) 42%, transparent 82%); }
 
 .signal-card { position: absolute; z-index: 11; top: 0; left: 0; width: min(410px,calc(50vw - 90px)); min-height: 280px; padding: 2rem 2.2rem; overflow: hidden; border: 1px solid rgba(255,255,255,.16); background: linear-gradient(145deg, rgba(20,16,16,.9), rgba(7,7,7,.76)); box-shadow: 0 30px 90px rgba(0,0,0,.55), inset 0 0 40px rgba(238,52,52,.025); backdrop-filter: blur(20px); opacity: 0; transform: translate3d(var(--panel-x,-1000px),var(--panel-y,20px),0) scale(.96); transform-origin: center; pointer-events: none; transition: opacity .35s, transform .28s ease-out; }
 .signal-card::before { content: ""; position: absolute; inset: 0; pointer-events: none; background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px); background-size: 28px 28px; mask-image: linear-gradient(135deg, black, transparent 70%); }
