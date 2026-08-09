@@ -261,14 +261,15 @@ if (mount && !mount.dataset.initialized) {
       if (!compact && active && signalPanel?.classList.contains("is-open")) {
         const panelWidth = signalPanel.offsetWidth;
         const panelHeight = signalPanel.offsetHeight;
-        const panelOnLeft = active.id === "work";
-        const panelX = panelOnLeft ? margin : Math.max(margin, width - panelWidth - margin);
+        const desiredX = active.x < width / 2
+          ? active.x - active.width / 2 - panelWidth - viewerConfig.panelGap
+          : active.x + active.width / 2 + viewerConfig.panelGap;
+        const panelX = THREE.MathUtils.clamp(desiredX, margin, width - panelWidth - margin);
         const panelMaxY = Math.max(margin, height - panelHeight - margin);
-        const panelY = panelOnLeft ? Math.min(108, panelMaxY) : margin;
+        const panelMinY = active.x < width / 2 ? Math.min(108, panelMaxY) : margin;
+        const panelY = THREE.MathUtils.clamp(active.y - panelHeight / 2, panelMinY, panelMaxY);
         signalPanel.style.setProperty("--panel-x", `${panelX}px`);
         signalPanel.style.setProperty("--panel-y", `${panelY}px`);
-        const tabX = panelOnLeft ? panelX + panelWidth + 20 : panelX - 20;
-        active.element.style.setProperty("--label-x", `${tabX}px`);
       }
     }
 
