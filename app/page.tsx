@@ -55,13 +55,14 @@ export default function Home() {
 
       <AvatarStage active={active} setActive={setActive} />
 
-      <aside className={`signal-card ${signal ? "is-open" : ""}`} aria-live="polite" aria-hidden={!signal}>
+      <aside className={`signal-card ${signal ? `is-open side-${signal.side}` : ""}`} aria-live="polite" aria-hidden={!signal}>
         {signal && (
           <>
             <button className="signal-close" onClick={() => setActive(null)} aria-label="Close information">×</button>
             <span>{signal.index} / {signal.label}</span>
             <h1>{signal.title}</h1>
             <p>{signal.body}</p>
+            <ul>{signal.details.map((detail) => <li key={detail}>{detail}</li>)}</ul>
             {signal.href && <a href={signal.href}>{signal.action} <i>↗</i></a>}
           </>
         )}

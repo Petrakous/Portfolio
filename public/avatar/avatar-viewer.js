@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { GLTFLoader } from "./loaders/GLTFLoader.js";
+import { viewerConfig } from "./viewer-config.js";
 
 const mount = document.querySelector("[data-avatar-webgl]");
 
@@ -56,10 +57,16 @@ if (mount && !mount.dataset.initialized) {
     let currentView = "overview";
     let pointerX = 0;
     let pointerY = 0;
-    let userYaw = 0;
+    let orbitAzimuth = 0;
+    let targetAzimuth = 0;
+    let orbitElevation = viewerConfig.orbit.initialElevation;
+    let targetElevation = viewerConfig.orbit.initialElevation;
+    let orbitDistance = closeCameraZ;
+    let targetDistance = closeCameraZ;
     let dragging = false;
     let dragPointerId = null;
     let dragX = 0;
+    let dragY = 0;
     let introStart = performance.now();
     let introComplete = false;
     let visible = true;
@@ -208,7 +215,10 @@ if (mount && !mount.dataset.initialized) {
         const fittedSize = fittedBounds.getSize(new THREE.Vector3());
         const verticalFov = THREE.MathUtils.degToRad(camera.fov);
         closeCameraZ = Math.max(5.2, (fittedSize.y * 0.5) / Math.tan(verticalFov * 0.5) * 1.18);
-        farCameraZ = closeCameraZ + 7;
+        closeCameraZ = THREE.MathUtils.clamp(closeCameraZ, viewerConfig.orbit.minDistance, viewerConfig.orbit.maxDistance);
+        farCameraZ = closeCameraZ + viewerConfig.intro.farPadding;
+        orbitDistance = closeCameraZ;
+        targetDistance = closeCameraZ;
         if (reducedMotion) camera.position.z = closeCameraZ;
 
         let sourceMesh = null;
@@ -260,25 +270,37 @@ if (mount && !mount.dataset.initialized) {
         updatePose(time);
         scene.updateMatrixWorld(true);
         updateSplatProxy();
-        const intro = reducedMotion ? 1 : Math.min((time - introStart) / 5200, 1);
+        const intro = reducedMotion ? 1 : Math.min((time - introStart) / viewerConfig.intro.durationMs, 1);
         if (!introComplete && intro >= 1) {
           introComplete = true;
           stage?.classList.add("is-intro-complete");
         }
         const eased = 1 - Math.pow(1 - intro, 4);
-        const radius = THREE.MathUtils.lerp(farCameraZ, closeCameraZ, eased);
-        const introOrbit = THREE.MathUtils.lerp(-Math.PI * 2.2, 0, eased);
-        const idleOrbit = intro >= 1 && !dragging ? Math.sin(time * 0.00016) * 0.055 : 0;
-        const cameraAngle = introOrbit + idleOrbit;
-        camera.position.x = Math.sin(cameraAngle) * radius;
-        camera.position.z = Math.cos(cameraAngle) * radius;
-        camera.position.y = THREE.MathUtils.lerp(1.45, 0.24, eased);
-        root.rotation.y = -Math.PI * 0.5 + userYaw;
-        root.rotation.x = pointerY * 0.025;
-        root.position.x = pointerX * 0.025;
+        let radius;
+        let cameraAngle;
+        let cameraElevation;
+        if (intro < 1) {
+          radius = THREE.MathUtils.lerp(farCameraZ, closeCameraZ, eased);
+          cameraAngle = THREE.MathUtils.lerp(-Math.PI * viewerConfig.intro.orbitTurns, 0, eased);
+          cameraElevation = THREE.MathUtils.lerp(0.24, viewerConfig.orbit.initialElevation, eased);
+        } else {
+          orbitAzimuth = THREE.MathUtils.lerp(orbitAzimuth, targetAzimuth, viewerConfig.orbit.damping);
+          orbitElevation = THREE.MathUtils.lerp(orbitElevation, targetElevation, viewerConfig.orbit.damping);
+          orbitDistance = THREE.MathUtils.lerp(orbitDistance, targetDistance, viewerConfig.orbit.damping);
+          radius = orbitDistance;
+          cameraAngle = orbitAzimuth;
+          cameraElevation = orbitElevation;
+        }
+        const horizontalRadius = Math.cos(cameraElevation) * radius;
+        camera.position.x = Math.sin(cameraAngle) * horizontalRadius;
+        camera.position.z = Math.cos(cameraAngle) * horizontalRadius;
+        camera.position.y = viewerConfig.target[1] + Math.sin(cameraElevation) * radius;
+        root.rotation.y = -Math.PI * 0.5;
+        root.rotation.x = 0;
+        root.position.x = 0;
       }
 
-      camera.lookAt(0, 0.02, 0);
+      camera.lookAt(...viewerConfig.target);
       renderer.render(scene, camera);
     }
 
@@ -290,16 +312,26 @@ if (mount && !mount.dataset.initialized) {
       pointerY = ((event.clientY - rect.top) / rect.height - 0.5) * 2;
     });
     renderer.domElement.addEventListener("pointerdown", (event) => {
+      if (!introComplete) return;
       dragging = true;
       dragPointerId = event.pointerId;
       dragX = event.clientX;
+      dragY = event.clientY;
       renderer.domElement.setPointerCapture(event.pointerId);
       stage?.classList.add("is-rotating");
     });
     renderer.domElement.addEventListener("pointermove", (event) => {
       if (!dragging || event.pointerId !== dragPointerId) return;
-      userYaw += (event.clientX - dragX) * 0.009;
+      const deltaX = event.clientX - dragX;
+      const deltaY = event.clientY - dragY;
+      targetAzimuth -= deltaX * viewerConfig.orbit.horizontalSpeed;
+      targetElevation = THREE.MathUtils.clamp(
+        targetElevation - deltaY * viewerConfig.orbit.verticalSpeed,
+        viewerConfig.orbit.minElevation,
+        viewerConfig.orbit.maxElevation,
+      );
       dragX = event.clientX;
+      dragY = event.clientY;
     });
     const endDrag = (event) => {
       if (!dragging || event.pointerId !== dragPointerId) return;
@@ -309,6 +341,15 @@ if (mount && !mount.dataset.initialized) {
     };
     renderer.domElement.addEventListener("pointerup", endDrag);
     renderer.domElement.addEventListener("pointercancel", endDrag);
+    renderer.domElement.addEventListener("wheel", (event) => {
+      if (!introComplete) return;
+      event.preventDefault();
+      targetDistance = THREE.MathUtils.clamp(
+        targetDistance + event.deltaY * viewerConfig.orbit.zoomSpeed,
+        viewerConfig.orbit.minDistance,
+        viewerConfig.orbit.maxDistance,
+      );
+    }, { passive: false });
     document.addEventListener("visibilitychange", () => { visible = !document.hidden; });
     renderer.domElement.addEventListener("webglcontextlost", () => {
       stage?.classList.remove("is-webgl-ready");
