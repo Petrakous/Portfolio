@@ -395,11 +395,12 @@ if (mount && !mount.dataset.initialized) {
 
     window.addEventListener("avatar-mode", (event) => { currentMode = event.detail || "neutral"; });
     window.addEventListener("avatar-view", (event) => { currentView = event.detail || "overview"; });
-    stage?.addEventListener("pointermove", (event) => {
+    window.addEventListener("pointermove", (event) => {
+      if (!stage) return;
       const rect = stage.getBoundingClientRect();
       pointerX = ((event.clientX - rect.left) / rect.width - 0.5) * 2;
       pointerY = ((event.clientY - rect.top) / rect.height - 0.5) * 2;
-    });
+    }, { capture: true });
     const releaseIntro = () => {
       if (introComplete) return;
       introComplete = true;

@@ -41,7 +41,7 @@ export default function Home() {
   const [isSwitching, setIsSwitching] = useState(false);
   const [selectedCard, setSelectedCard] = useState<PortfolioCard | null>(null);
   const [carouselPosition, setCarouselPosition] = useState(0);
-  const [carouselStep, setCarouselStep] = useState(285);
+  const [carouselStep, setCarouselStep] = useState(230);
   const [isDraggingCarousel, setIsDraggingCarousel] = useState(false);
   const transitionTimer = useRef<number | null>(null);
   const carouselDragStart = useRef<number | null>(null);
@@ -135,7 +135,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const updateStep = () => setCarouselStep(window.innerWidth <= 760 ? Math.max(170, (window.innerWidth - 96) * .68) : 285);
+    const updateStep = () => setCarouselStep(window.innerWidth <= 760 ? Math.max(160, (window.innerWidth - 96) * .62) : 230);
     updateStep();
     window.addEventListener("resize", updateStep);
     return () => window.removeEventListener("resize", updateStep);
