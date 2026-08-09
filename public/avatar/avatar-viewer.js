@@ -8,6 +8,10 @@ if (mount && !mount.dataset.initialized) {
   mount.dataset.initialized = "true";
   const stage = mount.closest(".avatar-stage");
   const status = mount.querySelector("[data-avatar-status]");
+  const labelElements = Object.fromEntries(
+    Object.keys(viewerConfig.labels).map((id) => [id, stage?.querySelector(`.hotspot-${id}`)]),
+  );
+  const signalPanel = document.querySelector(".signal-card");
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const compact = window.matchMedia("(max-width: 760px)").matches;
 
@@ -67,6 +71,9 @@ if (mount && !mount.dataset.initialized) {
     let dragPointerId = null;
     let dragX = 0;
     let dragY = 0;
+    let resizeFrame = 0;
+    let renderedWidth = 0;
+    let renderedHeight = 0;
     let introStart = performance.now();
     let introComplete = false;
     let visible = true;
@@ -75,6 +82,7 @@ if (mount && !mount.dataset.initialized) {
     const baseRotations = new Map();
     const clock = new THREE.Clock();
     const scratch = new THREE.Vector3();
+    const anchorScratch = new THREE.Vector3();
     const inverseRoot = new THREE.Matrix4();
     const targetQuaternion = new THREE.Quaternion();
     const deltaQuaternion = new THREE.Quaternion();
@@ -96,6 +104,9 @@ if (mount && !mount.dataset.initialized) {
     function resize() {
       const width = Math.max(1, mount.clientWidth);
       const height = Math.max(1, mount.clientHeight);
+      if (width === renderedWidth && height === renderedHeight) return;
+      renderedWidth = width;
+      renderedHeight = height;
       renderer.setSize(width, height, false);
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
@@ -184,14 +195,75 @@ if (mount && !mount.dataset.initialized) {
 
     function updatePose(time) {
       const breathe = Math.sin(time * 0.0017) * 0.028;
-      const presentingScreenRight = currentMode === "projects";
+      const presentingScreenRight = currentMode === "work";
       const presentingScreenLeft = currentMode === "research";
+      const lookX = THREE.MathUtils.clamp(pointerX, -1, 1);
+      const lookY = THREE.MathUtils.clamp(pointerY, -1, 1);
       poseBone("Skeleton_arm_joint_R", presentingScreenLeft ? 0.25 : -0.6, presentingScreenLeft ? -0.08 : 0, 0, 0.075);
       poseBone("Skeleton_arm_joint_R__2_", presentingScreenLeft ? 0.82 : 0.12, 0, presentingScreenLeft ? 0.1 : 0, 0.08);
       poseBone("Skeleton_arm_joint_L__4_", presentingScreenRight ? -0.25 : 0.6, presentingScreenRight ? 0.08 : 0, 0, 0.075);
       poseBone("Skeleton_arm_joint_L__3_", presentingScreenRight ? -0.82 : -0.12, 0, presentingScreenRight ? -0.1 : 0, 0.08);
-      poseBone("Skeleton_neck_joint_1", currentMode === "knowledge" ? pointerY * 0.16 : breathe, currentMode === "knowledge" ? pointerX * 0.28 : pointerX * 0.05, 0, 0.06);
+      poseBone("Skeleton_neck_joint_1", -lookY * 0.07 + breathe * 0.4, lookX * 0.1, -lookX * 0.02, 0.055);
+      poseBone("Skeleton_neck_joint_2", -lookY * 0.13, lookX * 0.2, -lookX * 0.035, 0.07);
       poseBone("Skeleton_torso_joint_2", currentMode === "about" ? -0.06 : breathe * 0.4, pointerX * 0.025, 0, 0.04);
+    }
+
+    function rectanglesOverlap(first, second, padding) {
+      return !(first.right + padding < second.left || first.left > second.right + padding
+        || first.bottom + padding < second.top || first.top > second.bottom + padding);
+    }
+
+    function updateAnchoredInterface() {
+      if (!model || !stage) return;
+      const width = stage.clientWidth;
+      const height = stage.clientHeight;
+      const margin = compact ? 12 : 20;
+      const resolved = [];
+
+      Object.entries(viewerConfig.labels).forEach(([id, config]) => {
+        const element = labelElements[id];
+        const bone = bones.get(config.bone);
+        if (!element || !bone) return;
+        bone.getWorldPosition(anchorScratch);
+        anchorScratch.x += config.worldOffset[0];
+        anchorScratch.y += config.worldOffset[1];
+        anchorScratch.z += config.worldOffset[2];
+        anchorScratch.project(camera);
+        const labelWidth = element.offsetWidth || 90;
+        const labelHeight = element.offsetHeight || 36;
+        const x = THREE.MathUtils.clamp((anchorScratch.x * 0.5 + 0.5) * width + config.offset[0], margin + labelWidth * 0.5, width - margin - labelWidth * 0.5);
+        const y = THREE.MathUtils.clamp((-anchorScratch.y * 0.5 + 0.5) * height + config.offset[1], margin + labelHeight * 0.5, height - margin - labelHeight * 0.5);
+        resolved.push({ id, element, x, y, width: labelWidth, height: labelHeight, visible: anchorScratch.z > -1 && anchorScratch.z < 1 });
+      });
+
+      resolved.sort((first, second) => first.y - second.y);
+      for (let index = 0; index < resolved.length; index += 1) {
+        const item = resolved[index];
+        for (let previousIndex = 0; previousIndex < index; previousIndex += 1) {
+          const previous = resolved[previousIndex];
+          const itemRect = { left: item.x - item.width / 2, right: item.x + item.width / 2, top: item.y - item.height / 2, bottom: item.y + item.height / 2 };
+          const previousRect = { left: previous.x - previous.width / 2, right: previous.x + previous.width / 2, top: previous.y - previous.height / 2, bottom: previous.y + previous.height / 2 };
+          if (rectanglesOverlap(itemRect, previousRect, viewerConfig.labelCollisionPadding)) {
+            item.y = THREE.MathUtils.clamp(previous.y + previous.height / 2 + item.height / 2 + viewerConfig.labelCollisionPadding, margin + item.height / 2, height - margin - item.height / 2);
+          }
+        }
+        item.element.style.setProperty("--label-x", `${item.x}px`);
+        item.element.style.setProperty("--label-y", `${item.y}px`);
+        item.element.dataset.anchorVisible = String(item.visible);
+      }
+
+      const active = resolved.find((item) => item.element.getAttribute("aria-pressed") === "true");
+      if (!compact && active && signalPanel?.classList.contains("is-open")) {
+        const panelWidth = signalPanel.offsetWidth;
+        const panelHeight = signalPanel.offsetHeight;
+        const desiredX = active.x < width / 2
+          ? active.x + active.width / 2 + viewerConfig.panelGap
+          : active.x - active.width / 2 - panelWidth - viewerConfig.panelGap;
+        const panelX = THREE.MathUtils.clamp(desiredX, margin, width - panelWidth - margin);
+        const panelY = THREE.MathUtils.clamp(active.y - panelHeight / 2, margin, height - panelHeight - margin);
+        signalPanel.style.setProperty("--panel-x", `${panelX}px`);
+        signalPanel.style.setProperty("--panel-y", `${panelY}px`);
+      }
     }
 
     const loader = new GLTFLoader();
@@ -238,9 +310,12 @@ if (mount && !mount.dataset.initialized) {
         [
           "Skeleton_arm_joint_R",
           "Skeleton_arm_joint_R__2_",
+          "Skeleton_arm_joint_R__3_",
           "Skeleton_arm_joint_L__4_",
           "Skeleton_arm_joint_L__3_",
+          "Skeleton_arm_joint_L__2_",
           "Skeleton_neck_joint_1",
+          "Skeleton_neck_joint_2",
           "Skeleton_torso_joint_2",
         ].forEach(rememberBone);
 
@@ -301,6 +376,9 @@ if (mount && !mount.dataset.initialized) {
       }
 
       camera.lookAt(...viewerConfig.target);
+      camera.updateMatrixWorld(true);
+      scene.updateMatrixWorld(true);
+      updateAnchoredInterface();
       renderer.render(scene, camera);
     }
 
@@ -326,7 +404,7 @@ if (mount && !mount.dataset.initialized) {
       const deltaY = event.clientY - dragY;
       targetAzimuth -= deltaX * viewerConfig.orbit.horizontalSpeed;
       targetElevation = THREE.MathUtils.clamp(
-        targetElevation - deltaY * viewerConfig.orbit.verticalSpeed,
+        targetElevation + deltaY * viewerConfig.orbit.verticalSpeed,
         viewerConfig.orbit.minElevation,
         viewerConfig.orbit.maxElevation,
       );
@@ -356,7 +434,10 @@ if (mount && !mount.dataset.initialized) {
       stage?.classList.add("avatar-load-failed");
     });
 
-    const observer = new ResizeObserver(resize);
+    const observer = new ResizeObserver(() => {
+      cancelAnimationFrame(resizeFrame);
+      resizeFrame = requestAnimationFrame(resize);
+    });
     observer.observe(mount);
     resize();
     requestAnimationFrame(animate);
@@ -364,6 +445,7 @@ if (mount && !mount.dataset.initialized) {
     window.addEventListener("pagehide", () => {
       disposed = true;
       observer.disconnect();
+      cancelAnimationFrame(resizeFrame);
       renderer.dispose();
       gaussianTexture.dispose();
     }, { once: true });

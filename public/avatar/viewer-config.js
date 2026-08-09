@@ -15,5 +15,13 @@ export const viewerConfig = {
     zoomSpeed: 0.006,
     damping: 0.12,
   },
+  labels: {
+    knowledge: { bone: "Skeleton_neck_joint_2", offset: [72, -26], worldOffset: [0, 0.1, 0] },
+    research: { bone: "Skeleton_arm_joint_L__2_", offset: [-84, 0], worldOffset: [0, 0, 0] },
+    work: { bone: "Skeleton_arm_joint_R__3_", offset: [84, 0], worldOffset: [0, 0, 0] },
+    about: { bone: "Skeleton_torso_joint_2", offset: [76, -4], worldOffset: [0, 0.02, 0] },
+  },
+  labelCollisionPadding: 10,
+  panelGap: 18,
   target: [0, 0.02, 0],
 };
