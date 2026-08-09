@@ -63,8 +63,10 @@ export default function Home() {
       <aside className={`signal-card ${signal ? `is-open side-${signal.side}` : ""}`} aria-live="polite" aria-hidden={!section}>
         {signal && section && (
           <>
-            <button className="signal-close" onClick={() => setActive(null)} aria-label="Close information">×</button>
-            <span>{signal.index} / {signal.label}</span>
+            <div className="signal-card-meta">
+              <span>{signal.index} / {signal.label}</span>
+              <button className="signal-close" onClick={() => setActive(null)} aria-label="Close information">×</button>
+            </div>
             <div className="signal-deck" aria-label={`${signal.label} highlights`}>
               {visibleCards.map((card, index) => (
                 <article className={`signal-slide ${cardPosition(index)}`} key={card.id} aria-hidden={index !== cardIndex}>
@@ -79,13 +81,15 @@ export default function Home() {
                   <div className="signal-slide-tags">{card.tags.slice(0, 3).map((tag) => <i key={tag}>{tag}</i>)}</div>
                 </article>
               ))}
+              <div className="signal-deck-controls">
+                <button onClick={() => moveCard(-1)} aria-label="Previous card">←</button>
+                <button onClick={() => moveCard(1)} aria-label="Next card">→</button>
+              </div>
             </div>
-            <div className="signal-deck-controls">
-              <button onClick={() => moveCard(-1)} aria-label="Previous card">←</button>
+            <div className="signal-deck-footer">
               <span>{String(cardIndex + 1).padStart(2, "0")} / {String(visibleCards.length).padStart(2, "0")}</span>
-              <button onClick={() => moveCard(1)} aria-label="Next card">→</button>
+              <a className="signal-more" href={section.href}>More <i>↗</i></a>
             </div>
-            <a className="signal-more" href={section.href}>More <i>↗</i></a>
           </>
         )}
       </aside>

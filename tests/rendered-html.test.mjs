@@ -54,6 +54,15 @@ test("server-renders credentials, knowledge, and about card routes", async () =>
   assert.match(await about.text(), /Snow &amp; Mountains/i);
 });
 
+test("every portfolio card has a visual", async () => {
+  for (const path of ["/work", "/credentials", "/knowledge", "/about"]) {
+    const response = await render(path);
+    const html = await response.text();
+    assert.match(html, /portfolio-card-visual has-image/i);
+    assert.doesNotMatch(html, /portfolio-card-visual is-abstract/i);
+  }
+});
+
 test("does not publish private CV fields", async () => {
   for (const path of ["/work", "/credentials", "/knowledge", "/about"]) {
     const response = await render(path);

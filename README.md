@@ -17,6 +17,7 @@ Open `http://localhost:3000`. Changes in `app/` update automatically. Create a p
 ## Edit the content
 
 - `app/portfolio-data.ts` — the cards shown in every carousel and index page. Edit this first when adding or removing work, credentials, skills, or interests.
+- The external Unsplash URLs in `demoImages` are temporary visual references. Replace each card's `image` and `imageAlt` when final project photography is ready.
 - `app/site-copy.ts` — the homepage name, role, hotspot labels, numbers, and panel sides.
 - `app/page.tsx` — the fullscreen 3D index and card-wheel interaction.
 - `app/section-page.tsx` — shared layout for `/work`, `/credentials`, `/knowledge`, and `/about`.
