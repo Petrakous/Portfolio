@@ -74,7 +74,7 @@ export default function Home() {
         setIsSwitching(false);
         transitionTimer.current = null;
       }, 600);
-    }, 170);
+    }, 360);
   };
 
   useEffect(() => () => {
