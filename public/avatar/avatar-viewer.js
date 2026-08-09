@@ -203,9 +203,11 @@ if (mount && !mount.dataset.initialized) {
       poseBone("Skeleton_arm_joint_R__2_", presentingScreenLeft ? 0.82 : 0.12, 0, presentingScreenLeft ? 0.1 : 0, 0.08);
       poseBone("Skeleton_arm_joint_L__4_", presentingScreenRight ? -0.25 : 0.6, presentingScreenRight ? 0.08 : 0, 0, 0.075);
       poseBone("Skeleton_arm_joint_L__3_", presentingScreenRight ? -0.82 : -0.12, 0, presentingScreenRight ? -0.1 : 0, 0.08);
-      poseBone("Skeleton_neck_joint_1", -lookY * 0.07 + breathe * 0.4, lookX * 0.1, -lookX * 0.02, 0.055);
-      poseBone("Skeleton_neck_joint_2", -lookY * 0.13, lookX * 0.2, -lookX * 0.035, 0.07);
-      poseBone("Skeleton_torso_joint_2", currentMode === "about" ? -0.06 : breathe * 0.4, pointerX * 0.025, 0, 0.04);
+      // CesiumMan's neck bones use local X for yaw and local Y for pitch.
+      // Split the movement across both joints to avoid a mechanical hinge look.
+      poseBone("Skeleton_neck_joint_1", lookX * viewerConfig.headTracking.yaw * 0.36, -lookY * viewerConfig.headTracking.pitch * 0.4, 0, 0.055);
+      poseBone("Skeleton_neck_joint_2", lookX * viewerConfig.headTracking.yaw * 0.64, -lookY * viewerConfig.headTracking.pitch * 0.6, 0, 0.07);
+      poseBone("Skeleton_torso_joint_2", currentMode === "about" ? -0.06 : breathe * 0.4, 0, 0, 0.04);
     }
 
     function rectanglesOverlap(first, second, padding) {

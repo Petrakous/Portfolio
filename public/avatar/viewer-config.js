@@ -23,5 +23,9 @@ export const viewerConfig = {
   },
   labelCollisionPadding: 10,
   panelGap: 18,
+  headTracking: {
+    yaw: 0.58,
+    pitch: 0.18,
+  },
   target: [0, 0.02, 0],
 };
