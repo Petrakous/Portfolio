@@ -28,7 +28,7 @@ function AvatarStage({ active, setActive }: { active: SignalId | null; setActive
       <div className="avatar-controls" aria-label="Explore the portfolio">
         {homeCopy.signals.map((signal) => (
           <button key={signal.id} className={`hotspot hotspot-${signal.id}`} onClick={() => activate(signal.id)} aria-pressed={active === signal.id}>
-            <span>{signal.index}</span>{signal.label}<i aria-hidden="true">{signal.icon}</i>
+            <span>{signal.index}</span>{signal.label}
           </button>
         ))}
       </div>

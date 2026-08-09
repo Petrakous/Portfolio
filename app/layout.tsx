@@ -15,6 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
       "The interactive portfolio of Petros Koutroulis (Petrakous): computer vision, research data tooling, 3D web systems, and research software.",
     keywords: ["Petros Koutroulis", "Petrakous", "computer vision", "research tooling", "3D web", "Gaussian splatting", "software engineering"],
     authors: [{ name: "Petros Koutroulis", url: "https://github.com/Petrakous" }],
+    icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
     openGraph: {
       type: "website",
       url: origin,

@@ -19,6 +19,8 @@ test("server-renders the fullscreen 3D index", async () => {
   const html = await response.text();
   assert.match(html, /Petros Koutroulis/i);
   assert.match(html, /<header class="home-identity"><p>Petros Koutroulis<\/p><\/header>/i);
+  assert.match(html, /href="\/favicon\.svg"/i);
+  assert.doesNotMatch(html, /hotspot[^>]*>.*?<i aria-hidden/i);
   assert.match(html, /Knowledge/i);
   assert.match(html, /Credentials/i);
   assert.match(html, /Work/i);
