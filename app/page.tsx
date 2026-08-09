@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getPortfolioSection } from "./portfolio-data";
 import { homeCopy, type SignalId } from "./site-copy";
 
@@ -39,6 +39,8 @@ function AvatarStage({ active, setActive }: { active: SignalId | null; setActive
 export default function Home() {
   const [active, setActive] = useState<SignalId | null>(null);
   const [cardIndex, setCardIndex] = useState(0);
+  const [isSwitching, setIsSwitching] = useState(false);
+  const transitionTimer = useRef<number | null>(null);
   const signal = homeCopy.signals.find((item) => item.id === active);
   const section = active ? getPortfolioSection(active) : null;
   const visibleCards = section?.cards.slice(0, 5) ?? [];
@@ -55,17 +57,41 @@ export default function Home() {
     return "is-hidden";
   };
 
+  const changeActive = (next: SignalId | null) => {
+    if (transitionTimer.current !== null) window.clearTimeout(transitionTimer.current);
+    if (!active || !next || active === next) {
+      setIsSwitching(false);
+      setActive(next);
+      setCardIndex(0);
+      return;
+    }
+
+    setIsSwitching(true);
+    transitionTimer.current = window.setTimeout(() => {
+      setActive(next);
+      setCardIndex(0);
+      transitionTimer.current = window.setTimeout(() => {
+        setIsSwitching(false);
+        transitionTimer.current = null;
+      }, 600);
+    }, 170);
+  };
+
+  useEffect(() => () => {
+    if (transitionTimer.current !== null) window.clearTimeout(transitionTimer.current);
+  }, []);
+
   return (
     <main className="cinematic-home">
       <header className="home-identity"><p>{homeCopy.name}</p><span>{homeCopy.role}</span></header>
-      <AvatarStage active={active} setActive={(next) => { setActive(next); setCardIndex(0); }} />
+      <AvatarStage active={active} setActive={changeActive} />
 
-      <aside className={`signal-card ${signal ? `is-open side-${signal.side}` : ""}`} aria-live="polite" aria-hidden={!section}>
+      <aside className={`signal-card ${signal ? `is-open side-${signal.side}` : ""} ${isSwitching ? "is-switching" : ""}`} aria-live="polite" aria-hidden={!section}>
         {signal && section && (
           <>
             <div className="signal-card-meta">
               <span>{signal.index} / {signal.label}</span>
-              <button className="signal-close" onClick={() => setActive(null)} aria-label="Close information">×</button>
+              <button className="signal-close" onClick={() => changeActive(null)} aria-label="Close information">×</button>
             </div>
             <div className="signal-deck" aria-label={`${signal.label} highlights`}>
               {visibleCards.map((card, index) => (

@@ -44,9 +44,10 @@ a { text-decoration: none; }
 .hotspot-knowledge::after, .hotspot-research::after, .hotspot-about::after { right: calc(100% - 3px); background: linear-gradient(90deg, transparent 0, rgba(238,52,52,.42) 26%, var(--line) 100%); }
 .hotspot-work::after, .hotspot-research[aria-pressed="true"]::after { right: auto; left: calc(100% - 3px); background: linear-gradient(90deg, var(--line) 0, rgba(238,52,52,.48) 42%, transparent 82%); }
 
-.signal-card { position: absolute; z-index: 11; top: 0; left: 0; width: min(860px,calc(100vw - 40px)); min-height: 420px; overflow: visible; opacity: 0; transform: translate3d(var(--panel-x,-1000px),var(--panel-y,20px),0) scale(.96); transform-origin: center; pointer-events: none; transition: opacity .35s, transform .28s ease-out; }
-.signal-card.is-open { opacity: 1; transform: translate3d(var(--panel-x,-1000px),var(--panel-y,20px),0) scale(1); pointer-events: auto; }
-.signal-card-meta { position: relative; z-index: 8; display: flex; width: min(370px,44vw); margin: 0 auto .65rem; justify-content: space-between; align-items: center; }
+.signal-card { position: absolute; z-index: 11; top: 0; left: 0; width: min(860px,calc(100vw - 40px)); min-height: 420px; overflow: visible; opacity: 0; transform: translate3d(var(--panel-x,-1000px),var(--panel-y,20px),0) scale(.96); transform-origin: center; pointer-events: none; transition: opacity .3s ease; }
+.signal-card.is-open { opacity: 1; transform: translate3d(var(--panel-x,-1000px),var(--panel-y,20px),0) scale(1); pointer-events: none; }
+.signal-card.is-switching { opacity: 0; pointer-events: none; transition: opacity .17s ease; }
+.signal-card-meta { position: relative; z-index: 8; display: flex; width: min(370px,44vw); margin: 0 auto .65rem; justify-content: space-between; align-items: center; pointer-events: auto; }
 .signal-card-meta > span { color: var(--red); font: 700 .63rem monospace; letter-spacing: .14em; }
 .signal-card h1 { position: relative; margin: 1.2rem 0 .65rem; font-size: clamp(1.7rem,2.3vw,2.7rem); letter-spacing: -.05em; }
 .signal-card p { position: relative; margin: 0; max-width: 38ch; color: #aaa49d; font-size: .9rem; line-height: 1.6; }
@@ -57,7 +58,7 @@ a { text-decoration: none; }
 
 .signal-deck { position: relative; height: 338px; perspective: 1100px; }
 .signal-slide { position: absolute; top: 0; bottom: 0; left: 50%; width: min(370px,44vw); display: flex; flex-direction: column; padding: .7rem; border: 1px solid rgba(255,255,255,.13); background: rgba(8,8,8,.94); box-shadow: 0 24px 68px rgba(0,0,0,.58); transition: transform .44s cubic-bezier(.2,.8,.2,1), opacity .35s, filter .35s; }
-.signal-slide.is-active { z-index: 4; transform: translate3d(-50%,0,24px); opacity: 1; }
+.signal-slide.is-active { z-index: 4; transform: translate3d(-50%,0,24px); opacity: 1; pointer-events: auto; }
 .signal-slide.is-prev { z-index: 2; transform: translate3d(calc(-50% - 285px),10px,-55px) rotateY(5deg) scale(.94); opacity: .55; filter: blur(2px) saturate(.72); }
 .signal-slide.is-next { z-index: 3; transform: translate3d(calc(-50% + 285px),10px,-55px) rotateY(-5deg) scale(.94); opacity: .55; filter: blur(2px) saturate(.72); }
 .signal-slide.is-hidden { transform: translate3d(-50%,0,-90px) scale(.88); opacity: 0; pointer-events: none; }
@@ -75,7 +76,7 @@ a { text-decoration: none; }
 .signal-deck-controls button:first-child { left: 0; }
 .signal-deck-controls button:last-child { right: 0; }
 .signal-deck-controls button:hover, .signal-deck-controls button:focus-visible { border-color: var(--red); background: rgba(238,52,52,.12); }
-.signal-deck-footer { position: relative; z-index: 8; display: flex; width: min(370px,44vw); margin: .8rem auto 0; justify-content: space-between; align-items: center; }
+.signal-deck-footer { position: relative; z-index: 8; display: flex; width: min(370px,44vw); margin: .8rem auto 0; justify-content: space-between; align-items: center; pointer-events: auto; }
 .signal-deck-footer > span { color: var(--muted); font: 700 .58rem monospace; letter-spacing: .12em; }
 .signal-card .signal-more { margin: 0; }
 
