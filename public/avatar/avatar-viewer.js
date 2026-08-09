@@ -195,14 +195,14 @@ if (mount && !mount.dataset.initialized) {
 
     function updatePose(time) {
       const breathe = Math.sin(time * 0.0017) * 0.028;
-      const presentingScreenRight = currentMode === "work";
-      const presentingScreenLeft = currentMode === "research";
+      const presentingRightArm = currentMode === "work";
+      const presentingLeftArm = currentMode === "research";
       const lookX = THREE.MathUtils.clamp(pointerX, -1, 1);
       const lookY = THREE.MathUtils.clamp(pointerY, -1, 1);
-      poseBone("Skeleton_arm_joint_R", presentingScreenLeft ? 0.25 : -0.6, presentingScreenLeft ? -0.08 : 0, 0, 0.075);
-      poseBone("Skeleton_arm_joint_R__2_", presentingScreenLeft ? 0.82 : 0.12, 0, presentingScreenLeft ? 0.1 : 0, 0.08);
-      poseBone("Skeleton_arm_joint_L__4_", presentingScreenRight ? -0.25 : 0.6, presentingScreenRight ? 0.08 : 0, 0, 0.075);
-      poseBone("Skeleton_arm_joint_L__3_", presentingScreenRight ? -0.82 : -0.12, 0, presentingScreenRight ? -0.1 : 0, 0.08);
+      poseBone("Skeleton_arm_joint_R", presentingRightArm ? 0.25 : -0.6, presentingRightArm ? -0.08 : 0, 0, 0.075);
+      poseBone("Skeleton_arm_joint_R__2_", presentingRightArm ? 0.82 : 0.12, 0, presentingRightArm ? 0.1 : 0, 0.08);
+      poseBone("Skeleton_arm_joint_L__4_", presentingLeftArm ? -0.25 : 0.6, presentingLeftArm ? 0.08 : 0, 0, 0.075);
+      poseBone("Skeleton_arm_joint_L__3_", presentingLeftArm ? -0.82 : -0.12, 0, presentingLeftArm ? -0.1 : 0, 0.08);
       // CesiumMan's neck bones use local X for yaw and local Y for pitch.
       // Split the movement across both joints to avoid a mechanical hinge look.
       poseBone("Skeleton_neck_joint_1", lookX * viewerConfig.headTracking.yaw * 0.36, -lookY * viewerConfig.headTracking.pitch * 0.4, 0, 0.055);
@@ -259,12 +259,14 @@ if (mount && !mount.dataset.initialized) {
         const panelWidth = signalPanel.offsetWidth;
         const panelHeight = signalPanel.offsetHeight;
         const desiredX = active.x < width / 2
-          ? active.x + active.width / 2 + viewerConfig.panelGap
-          : active.x - active.width / 2 - panelWidth - viewerConfig.panelGap;
+          ? active.x - active.width / 2 - panelWidth - viewerConfig.panelGap
+          : active.x + active.width / 2 + viewerConfig.panelGap;
         const panelX = THREE.MathUtils.clamp(desiredX, margin, width - panelWidth - margin);
         const panelY = THREE.MathUtils.clamp(active.y - panelHeight / 2, margin, height - panelHeight - margin);
         signalPanel.style.setProperty("--panel-x", `${panelX}px`);
         signalPanel.style.setProperty("--panel-y", `${panelY}px`);
+        const tabX = active.x < width / 2 ? panelX + panelWidth + 20 : panelX - 20;
+        active.element.style.setProperty("--label-x", `${tabX}px`);
       }
     }
 
