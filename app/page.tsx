@@ -61,13 +61,6 @@ export default function Home() {
     if (distance < -visibleCards.length / 2) distance += visibleCards.length;
     return distance;
   };
-  const displayedCardIndexes = new Set(
-    visibleCards
-      .map((_, index) => ({ index, distance: distanceFromCenter(index) }))
-      .sort((a, b) => Math.abs(a.distance) - Math.abs(b.distance) || a.distance - b.distance)
-      .slice(0, 3)
-      .map(({ index }) => index),
-  );
   const beginCarouselDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (event.button !== 0) return;
     event.stopPropagation();
@@ -181,7 +174,8 @@ export default function Home() {
                 const distance = distanceFromCenter(index);
                 const depth = Math.min(Math.abs(distance), 2.5);
                 const isCentered = index === cardIndex;
-                const isDisplayed = displayedCardIndexes.has(index);
+                const edgeFade = Math.max(0, Math.min(1, (2 - depth) / .85));
+                const cardOpacity = edgeFade * Math.max(.16, 1 - depth * .38);
                 return (
                 <article
                   className={`signal-slide ${isCentered ? "is-centered" : ""}`}
@@ -189,11 +183,10 @@ export default function Home() {
                   aria-hidden={!isCentered}
                   style={{
                     transform: `translate3d(calc(-50% + ${distance * carouselStep}px), ${Math.min(depth, 1) * 10}px, ${24 - depth * 79}px) rotateY(${distance * -5}deg) scale(${1 - depth * .055})`,
-                    opacity: isDisplayed ? Math.max(0, 1 - Math.max(0, depth - .15) * .42) : 0,
-                    visibility: isDisplayed ? "visible" : "hidden",
-                    filter: `blur(${depth * 1.8}px) saturate(${Math.max(.58, 1 - depth * .28)})`,
+                    opacity: cardOpacity,
+                    filter: `blur(${depth * 2.1}px) saturate(${Math.max(.5, 1 - depth * .3)})`,
                     zIndex: Math.round(10 - depth * 2),
-                    pointerEvents: isDisplayed && depth <= 1.35 ? "auto" : "none",
+                    pointerEvents: depth <= 1.25 ? "auto" : "none",
                   }}
                 >
                   <div className={`signal-slide-visual ${card.image ? "has-image" : "is-abstract"}`}>
