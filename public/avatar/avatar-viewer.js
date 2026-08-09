@@ -35,6 +35,20 @@ if (mount && !mount.dataset.initialized) {
     const root = new THREE.Group();
     scene.add(root);
 
+    const floorDisc = new THREE.Mesh(
+      new THREE.CircleGeometry(4.6, 72),
+      new THREE.MeshBasicMaterial({ color: 0x090707, transparent: true, opacity: 0.7, depthWrite: false }),
+    );
+    floorDisc.rotation.x = -Math.PI * 0.5;
+    floorDisc.position.y = -1.205;
+    scene.add(floorDisc);
+
+    const floorGrid = new THREE.GridHelper(18, 36, 0x7a2020, 0x251515);
+    floorGrid.position.y = -1.2;
+    floorGrid.material.transparent = true;
+    floorGrid.material.opacity = 0.34;
+    scene.add(floorGrid);
+
     let model = null;
     let pointCloud = null;
     let pointState = null;
@@ -47,6 +61,7 @@ if (mount && !mount.dataset.initialized) {
     let dragPointerId = null;
     let dragX = 0;
     let introStart = performance.now();
+    let introComplete = false;
     let visible = true;
     let disposed = false;
     const bones = new Map();
@@ -245,17 +260,25 @@ if (mount && !mount.dataset.initialized) {
         updatePose(time);
         scene.updateMatrixWorld(true);
         updateSplatProxy();
-        const intro = reducedMotion ? 1 : Math.min((time - introStart) / 3200, 1);
+        const intro = reducedMotion ? 1 : Math.min((time - introStart) / 5200, 1);
+        if (!introComplete && intro >= 1) {
+          introComplete = true;
+          stage?.classList.add("is-intro-complete");
+        }
         const eased = 1 - Math.pow(1 - intro, 4);
-        camera.position.z = THREE.MathUtils.lerp(farCameraZ, closeCameraZ, eased);
-        camera.position.y = THREE.MathUtils.lerp(0.55, 0.18, eased);
-        root.rotation.y = -Math.PI * 0.5 + userYaw + (1 - eased) * (-Math.PI * 2.1) + (dragging ? 0 : Math.sin(time * 0.00018) * 0.06);
+        const radius = THREE.MathUtils.lerp(farCameraZ, closeCameraZ, eased);
+        const introOrbit = THREE.MathUtils.lerp(-Math.PI * 2.2, 0, eased);
+        const idleOrbit = intro >= 1 && !dragging ? Math.sin(time * 0.00016) * 0.055 : 0;
+        const cameraAngle = introOrbit + idleOrbit;
+        camera.position.x = Math.sin(cameraAngle) * radius;
+        camera.position.z = Math.cos(cameraAngle) * radius;
+        camera.position.y = THREE.MathUtils.lerp(1.45, 0.24, eased);
+        root.rotation.y = -Math.PI * 0.5 + userYaw;
         root.rotation.x = pointerY * 0.025;
-        const framingOffset = camera.aspect > 0.9 ? -0.7 : -0.18;
-        root.position.x = framingOffset + pointerX * 0.05;
+        root.position.x = pointerX * 0.025;
       }
 
-      camera.lookAt(0, 0.04, 0);
+      camera.lookAt(0, 0.02, 0);
       renderer.render(scene, camera);
     }
 

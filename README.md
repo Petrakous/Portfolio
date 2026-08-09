@@ -1,6 +1,6 @@
 # Petrakous — Personal Research Lab
 
-An interactive portfolio for Petros Koutroulis, built around a spatial avatar interface and evidence-backed project stories across computer vision, research tooling, 3D web, and research software.
+An interactive portfolio for Petros Koutroulis, built around a fullscreen spatial avatar index and a separate selected-work route.
 
 ## Run locally
 
@@ -16,7 +16,9 @@ Open `http://localhost:3000`. Changes in `app/` update automatically. Create a p
 
 ## Structure
 
-- `app/page.tsx` — interactive experience, avatar state machine, command palette, project chapters, and responsive fallbacks.
+- `app/page.tsx` — locked fullscreen 3D index and the four avatar interaction states.
+- `app/site-copy.ts` — the small, editable block containing the homepage name, role, and four signal descriptions.
+- `app/work/page.tsx` — the separate selected-work page.
 - `app/content.ts` — maintainable project, skills, and search-index content.
 - `app/globals.css` — black/red visual system, 3D-stage integration, motion, responsive behavior, and reduced-motion support.
 - `public/avatar/` — Three.js runtime, public CesiumMan fallback, and the animated point/splat proxy.
@@ -26,7 +28,7 @@ Open `http://localhost:3000`. Changes in `app/` update automatically. Create a p
 
 ## Avatar status
 
-The hero now loads an actual skinned 3D model and resamples its animated surface into soft point sprites. It provides the cinematic camera move, rotation, head tracking, and left/right presentation gestures needed to test the interaction design. It is intentionally a splat-like proxy, not a genuine Gaussian reconstruction.
+The homepage loads an actual skinned 3D model and resamples its animated surface into soft point sprites. The camera performs the cinematic approach and orbit while the subject stays in place over a floor grid. The result is intentionally a splat-like proxy, not a genuine Gaussian reconstruction.
 
 When Petros' own reconstruction is ready, keep the `avatar-mode` and `avatar-view` browser events, replace the model/renderer, and preserve the CSS fallback and reduced-motion path.
 
