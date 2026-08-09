@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { getPortfolioSection, type PortfolioCard } from "./portfolio-data";
 import { homeCopy, type SignalId } from "./site-copy";
 
@@ -38,54 +38,63 @@ function AvatarStage({ active, setActive }: { active: SignalId | null; setActive
 
 export default function Home() {
   const [active, setActive] = useState<SignalId | null>(null);
-  const [cardIndex, setCardIndex] = useState(0);
   const [isSwitching, setIsSwitching] = useState(false);
   const [selectedCard, setSelectedCard] = useState<PortfolioCard | null>(null);
-  const [carouselDrag, setCarouselDrag] = useState(0);
+  const [carouselPosition, setCarouselPosition] = useState(0);
+  const [carouselStep, setCarouselStep] = useState(285);
   const [isDraggingCarousel, setIsDraggingCarousel] = useState(false);
   const transitionTimer = useRef<number | null>(null);
   const carouselDragStart = useRef<number | null>(null);
+  const carouselDragOrigin = useRef(0);
   const suppressCardClick = useRef(false);
   const signal = homeCopy.signals.find((item) => item.id === active);
   const section = active ? getPortfolioSection(active) : null;
   const visibleCards = section?.cards.slice(0, 5) ?? [];
+  const cardIndex = visibleCards.length
+    ? ((Math.round(carouselPosition) % visibleCards.length) + visibleCards.length) % visibleCards.length
+    : 0;
 
-  const moveCard = (direction: number) => {
-    if (!visibleCards.length) return;
-    setCardIndex((current) => (current + direction + visibleCards.length) % visibleCards.length);
+  const distanceFromCenter = (index: number, position = carouselPosition) => {
+    if (!visibleCards.length) return 0;
+    let distance = (index - position) % visibleCards.length;
+    if (distance > visibleCards.length / 2) distance -= visibleCards.length;
+    if (distance < -visibleCards.length / 2) distance += visibleCards.length;
+    return distance;
   };
   const beginCarouselDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (event.button !== 0) return;
     event.stopPropagation();
     carouselDragStart.current = event.clientX;
+    carouselDragOrigin.current = carouselPosition;
     suppressCardClick.current = false;
-    setIsDraggingCarousel(true);
-    event.currentTarget.setPointerCapture(event.pointerId);
   };
   const updateCarouselDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (carouselDragStart.current === null) return;
     event.stopPropagation();
     const distance = event.clientX - carouselDragStart.current;
-    if (Math.abs(distance) > 6) suppressCardClick.current = true;
-    setCarouselDrag(Math.max(-180, Math.min(180, distance)));
+    if (Math.abs(distance) <= 6 && !isDraggingCarousel) return;
+    if (!isDraggingCarousel) {
+      suppressCardClick.current = true;
+      setIsDraggingCarousel(true);
+      event.currentTarget.setPointerCapture(event.pointerId);
+    }
+    setCarouselPosition(carouselDragOrigin.current - distance / carouselStep);
   };
   const endCarouselDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (carouselDragStart.current === null) return;
     event.stopPropagation();
-    const distance = event.clientX - carouselDragStart.current;
     carouselDragStart.current = null;
-    setCarouselDrag(0);
     setIsDraggingCarousel(false);
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
-    if (Math.abs(distance) >= 55) moveCard(distance < 0 ? 1 : -1);
+    setCarouselPosition((position) => Math.round(position));
     window.setTimeout(() => { suppressCardClick.current = false; }, 0);
   };
   const cancelCarouselDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (carouselDragStart.current === null) return;
     carouselDragStart.current = null;
     suppressCardClick.current = false;
-    setCarouselDrag(0);
     setIsDraggingCarousel(false);
+    setCarouselPosition(Math.round(carouselDragOrigin.current));
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
   };
   const activateCarouselCard = (card: PortfolioCard, index: number) => {
@@ -94,38 +103,42 @@ export default function Home() {
       return;
     }
     if (index === cardIndex) setSelectedCard(card);
-    else setCardIndex(index);
-  };
-  const cardPosition = (index: number) => {
-    const distance = (index - cardIndex + visibleCards.length) % visibleCards.length;
-    if (distance === 0) return "is-active";
-    if (distance === 1) return "is-next";
-    if (distance === visibleCards.length - 1) return "is-prev";
-    return "is-hidden";
+    else setCarouselPosition((position) => position + distanceFromCenter(index, position));
   };
 
   const changeActive = (next: SignalId | null) => {
     if (transitionTimer.current !== null) window.clearTimeout(transitionTimer.current);
-    if (!active || !next || active === next) {
-      setIsSwitching(false);
+    if (!active && next) {
       setActive(next);
-      setCardIndex(0);
+      setCarouselPosition(0);
       return;
     }
 
     setIsSwitching(true);
     transitionTimer.current = window.setTimeout(() => {
       setActive(next);
-      setCardIndex(0);
+      setCarouselPosition(0);
+      if (!next) {
+        setIsSwitching(false);
+        transitionTimer.current = null;
+        return;
+      }
       transitionTimer.current = window.setTimeout(() => {
         setIsSwitching(false);
         transitionTimer.current = null;
-      }, 600);
-    }, 360);
+      }, 70);
+    }, 200);
   };
 
   useEffect(() => () => {
     if (transitionTimer.current !== null) window.clearTimeout(transitionTimer.current);
+  }, []);
+
+  useEffect(() => {
+    const updateStep = () => setCarouselStep(window.innerWidth <= 760 ? Math.max(170, (window.innerWidth - 96) * .68) : 285);
+    updateStep();
+    window.addEventListener("resize", updateStep);
+    return () => window.removeEventListener("resize", updateStep);
   }, []);
 
   useEffect(() => {
@@ -152,14 +165,28 @@ export default function Home() {
             <div
               className={`signal-deck ${isDraggingCarousel ? "is-dragging" : ""}`}
               aria-label={`${signal.label} highlights`}
-              style={{ "--deck-drag": `${carouselDrag}px` } as CSSProperties}
               onPointerDown={beginCarouselDrag}
               onPointerMove={updateCarouselDrag}
               onPointerUp={endCarouselDrag}
               onPointerCancel={cancelCarouselDrag}
             >
-              {visibleCards.map((card, index) => (
-                <article className={`signal-slide ${cardPosition(index)}`} key={card.id} aria-hidden={index !== cardIndex}>
+              {visibleCards.map((card, index) => {
+                const distance = distanceFromCenter(index);
+                const depth = Math.min(Math.abs(distance), 2.5);
+                const isCentered = index === cardIndex;
+                return (
+                <article
+                  className={`signal-slide ${isCentered ? "is-centered" : ""}`}
+                  key={card.id}
+                  aria-hidden={!isCentered}
+                  style={{
+                    transform: `translate3d(calc(-50% + ${distance * carouselStep}px), ${Math.min(depth, 1) * 10}px, ${24 - depth * 79}px) rotateY(${distance * -5}deg) scale(${1 - depth * .055})`,
+                    opacity: Math.max(0, 1 - Math.max(0, depth - .15) * .42),
+                    filter: `blur(${depth * 1.8}px) saturate(${Math.max(.58, 1 - depth * .28)})`,
+                    zIndex: Math.round(10 - depth * 2),
+                    pointerEvents: depth <= 1.35 ? "auto" : "none",
+                  }}
+                >
                   <div className={`signal-slide-visual ${card.image ? "has-image" : "is-abstract"}`}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     {card.image && <img src={card.image} alt={card.imageAlt ?? ""} />}
@@ -169,16 +196,16 @@ export default function Home() {
                   <h1>{card.title}</h1>
                   <p>{card.summary}</p>
                   <div className="signal-slide-tags">{card.tags.slice(0, 3).map((tag) => <i key={tag}>{tag}</i>)}</div>
-                  {index === cardIndex && <span className="signal-slide-hint">View details ↗</span>}
+                  {isCentered && <span className="signal-slide-hint">View details ↗</span>}
                   <button
                     className="signal-slide-open"
                     type="button"
-                    tabIndex={index === cardIndex ? 0 : -1}
+                    tabIndex={isCentered ? 0 : -1}
                     onClick={() => activateCarouselCard(card, index)}
-                    aria-label={index === cardIndex ? `Open details for ${card.title}` : `Show ${card.title}`}
+                    aria-label={isCentered ? `Open details for ${card.title}` : `Show ${card.title}`}
                   />
                 </article>
-              ))}
+              )})}
             </div>
             <div className="signal-deck-footer">
               <span>{String(cardIndex + 1).padStart(2, "0")} / {String(visibleCards.length).padStart(2, "0")}</span>
