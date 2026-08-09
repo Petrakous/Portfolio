@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { getPortfolioSection } from "./portfolio-data";
+import { getPortfolioSection, type PortfolioCard } from "./portfolio-data";
 import { homeCopy, type SignalId } from "./site-copy";
 
 function AvatarStage({ active, setActive }: { active: SignalId | null; setActive: (signal: SignalId | null) => void }) {
@@ -40,6 +40,7 @@ export default function Home() {
   const [active, setActive] = useState<SignalId | null>(null);
   const [cardIndex, setCardIndex] = useState(0);
   const [isSwitching, setIsSwitching] = useState(false);
+  const [selectedCard, setSelectedCard] = useState<PortfolioCard | null>(null);
   const transitionTimer = useRef<number | null>(null);
   const signal = homeCopy.signals.find((item) => item.id === active);
   const section = active ? getPortfolioSection(active) : null;
@@ -81,6 +82,15 @@ export default function Home() {
     if (transitionTimer.current !== null) window.clearTimeout(transitionTimer.current);
   }, []);
 
+  useEffect(() => {
+    if (!selectedCard) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setSelectedCard(null);
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [selectedCard]);
+
   return (
     <main className="cinematic-home">
       <header className="home-identity"><p>{homeCopy.name}</p></header>
@@ -105,6 +115,12 @@ export default function Home() {
                   <h1>{card.title}</h1>
                   <p>{card.summary}</p>
                   <div className="signal-slide-tags">{card.tags.slice(0, 3).map((tag) => <i key={tag}>{tag}</i>)}</div>
+                  {index === cardIndex && (
+                    <>
+                      <span className="signal-slide-hint">View details ↗</span>
+                      <button className="signal-slide-open" type="button" onClick={() => setSelectedCard(card)} aria-label={`Open details for ${card.title}`} />
+                    </>
+                  )}
                 </article>
               ))}
               <div className="signal-deck-controls">
@@ -119,6 +135,32 @@ export default function Home() {
           </>
         )}
       </aside>
+
+      {selectedCard && section && (
+        <div className="portfolio-dialog-backdrop">
+          <button className="portfolio-dialog-dismiss" type="button" onClick={() => setSelectedCard(null)} aria-label="Close details" />
+          <article className="portfolio-dialog" role="dialog" aria-modal="true" aria-labelledby="home-portfolio-dialog-title">
+            <button className="portfolio-dialog-close" type="button" onClick={() => setSelectedCard(null)} aria-label="Close details">×</button>
+            <div className="portfolio-dialog-visual">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              {selectedCard.image && <img src={selectedCard.image} alt={selectedCard.imageAlt ?? ""} />}
+            </div>
+            <div className="portfolio-dialog-copy">
+              <small>{section.label} / {selectedCard.group}</small>
+              <span>{selectedCard.kicker}</span>
+              <h2 id="home-portfolio-dialog-title">{selectedCard.title}</h2>
+              <p>{selectedCard.summary}</p>
+              {selectedCard.evidence && <div className="portfolio-dialog-evidence"><b>Evidence</b>{selectedCard.evidence}</div>}
+              <div className="portfolio-dialog-tags">{selectedCard.tags.map((tag) => <i key={tag}>{tag}</i>)}</div>
+              {selectedCard.links?.length ? (
+                <div className="portfolio-dialog-links">
+                  {selectedCard.links.map((link) => <a key={link.href} href={link.href} target="_blank" rel="noreferrer">{link.label} ↗</a>)}
+                </div>
+              ) : null}
+            </div>
+          </article>
+        </div>
+      )}
     </main>
   );
 }

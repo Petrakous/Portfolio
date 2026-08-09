@@ -56,8 +56,9 @@ a { text-decoration: none; }
 .signal-close { width: 30px; height: 30px; border: 1px solid var(--line); background: rgba(7,7,7,.68); color: var(--muted); cursor: pointer; backdrop-filter: blur(12px); }
 
 .signal-deck { position: relative; height: 338px; perspective: 1100px; }
-.signal-slide { position: absolute; top: 0; bottom: 0; left: 50%; width: min(370px,44vw); display: flex; flex-direction: column; padding: .7rem; border: 1px solid rgba(255,255,255,.13); background: rgba(8,8,8,.94); box-shadow: 0 24px 68px rgba(0,0,0,.58); transition: transform .44s cubic-bezier(.2,.8,.2,1), opacity .35s, filter .35s; }
+.signal-slide { position: absolute; top: 0; bottom: 0; left: 50%; width: min(370px,44vw); display: flex; flex-direction: column; padding: .7rem; border: 1px solid rgba(255,255,255,.13); background: rgba(8,8,8,.94); box-shadow: 0 24px 68px rgba(0,0,0,.58); transition: transform .44s cubic-bezier(.2,.8,.2,1), opacity .35s, filter .35s, border-color .2s; }
 .signal-slide.is-active { z-index: 4; transform: translate3d(-50%,0,24px); opacity: 1; pointer-events: auto; }
+.signal-slide.is-active:hover, .signal-slide.is-active:focus-within { border-color: rgba(238,52,52,.68); }
 .signal-slide.is-prev { z-index: 2; transform: translate3d(calc(-50% - 285px),10px,-55px) rotateY(5deg) scale(.94); opacity: .55; filter: blur(2px) saturate(.72); }
 .signal-slide.is-next { z-index: 3; transform: translate3d(calc(-50% + 285px),10px,-55px) rotateY(-5deg) scale(.94); opacity: .55; filter: blur(2px) saturate(.72); }
 .signal-slide.is-hidden { transform: translate3d(-50%,0,-90px) scale(.88); opacity: 0; pointer-events: none; }
@@ -68,8 +69,12 @@ a { text-decoration: none; }
 .signal-slide small { color: var(--red); font: 700 .59rem monospace; letter-spacing: .11em; text-transform: uppercase; }
 .signal-slide h1 { margin: .55rem 0 .4rem; font-size: 1.55rem; line-height: 1; }
 .signal-slide p { font-size: .78rem; line-height: 1.45; }
-.signal-slide-tags { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: auto; padding-top: .65rem; }
+.signal-slide-tags { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: auto; padding-top: .65rem; padding-right: 5rem; }
 .signal-slide-tags i { border: 1px solid var(--line); padding: .28rem .4rem; color: #bbb5ae; font: 600 .54rem monospace; font-style: normal; }
+.signal-slide-hint { position: absolute; z-index: 6; right: .8rem; bottom: .82rem; color: var(--red); font: 700 .55rem monospace; letter-spacing: .08em; text-transform: uppercase; pointer-events: none; }
+.signal-slide-open { position: absolute; z-index: 5; inset: 0; border: 0; background: transparent; cursor: pointer; pointer-events: auto; }
+.signal-slide-open:focus-visible { outline: 2px solid var(--red); outline-offset: -4px; }
+.signal-card.is-switching .signal-slide-open { pointer-events: none; }
 .signal-deck-controls { position: absolute; z-index: 8; inset: 0; pointer-events: none; }
 .signal-deck-controls button { position: absolute; top: 50%; width: 42px; height: 42px; transform: translateY(-50%); border: 1px solid rgba(255,255,255,.22); background: rgba(7,7,7,.78); color: white; cursor: pointer; pointer-events: auto; backdrop-filter: blur(12px); }
 .signal-deck-controls button:first-child { left: 0; }
