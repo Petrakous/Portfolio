@@ -78,6 +78,10 @@ if (mount && !mount.dataset.initialized) {
     let dragPointerId = null;
     let dragX = 0;
     let dragY = 0;
+    const touchPointers = new Map();
+    let pinching = false;
+    let pinchStartGap = 0;
+    let pinchStartDistance = closeCameraZ;
     let resizeFrame = 0;
     let renderedWidth = 0;
     let renderedHeight = 0;
@@ -491,16 +495,51 @@ if (mount && !mount.dataset.initialized) {
       targetElevation = liveCameraElevation;
       stage?.classList.add("is-intro-complete");
     };
+    const getTouchGap = () => {
+      const [first, second] = [...touchPointers.values()];
+      return first && second ? Math.hypot(second.x - first.x, second.y - first.y) : 0;
+    };
     renderer.domElement.addEventListener("pointerdown", (event) => {
       releaseIntro();
+      if (event.pointerType === "touch") {
+        touchPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        renderer.domElement.setPointerCapture(event.pointerId);
+        if (touchPointers.size >= 2) {
+          pinching = true;
+          pinchStartGap = getTouchGap();
+          pinchStartDistance = targetDistance;
+          dragging = false;
+          dragPointerId = null;
+          stage?.classList.remove("is-rotating");
+          event.preventDefault();
+          return;
+        }
+      }
       dragging = true;
       dragPointerId = event.pointerId;
       dragX = event.clientX;
       dragY = event.clientY;
-      renderer.domElement.setPointerCapture(event.pointerId);
+      if (!renderer.domElement.hasPointerCapture(event.pointerId)) {
+        renderer.domElement.setPointerCapture(event.pointerId);
+      }
       stage?.classList.add("is-rotating");
     });
     renderer.domElement.addEventListener("pointermove", (event) => {
+      if (event.pointerType === "touch" && touchPointers.has(event.pointerId)) {
+        touchPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        if (pinching && touchPointers.size >= 2) {
+          const gap = getTouchGap();
+          if (gap > 0 && pinchStartGap > 0) {
+            targetDistance = THREE.MathUtils.clamp(
+              pinchStartDistance * (pinchStartGap / gap),
+              viewerConfig.orbit.minDistance,
+              viewerConfig.orbit.maxDistance,
+            );
+          }
+          event.preventDefault();
+          return;
+        }
+      }
       if (!dragging || event.pointerId !== dragPointerId) return;
       const deltaX = event.clientX - dragX;
       const deltaY = event.clientY - dragY;
@@ -514,6 +553,22 @@ if (mount && !mount.dataset.initialized) {
       dragY = event.clientY;
     });
     const endDrag = (event) => {
+      if (event.pointerType === "touch") {
+        touchPointers.delete(event.pointerId);
+        if (pinching) {
+          pinching = touchPointers.size >= 2;
+          if (pinching) {
+            pinchStartGap = getTouchGap();
+            pinchStartDistance = targetDistance;
+          } else {
+            pinchStartGap = 0;
+            dragging = false;
+            dragPointerId = null;
+            stage?.classList.remove("is-rotating");
+          }
+          return;
+        }
+      }
       if (!dragging || event.pointerId !== dragPointerId) return;
       dragging = false;
       dragPointerId = null;
