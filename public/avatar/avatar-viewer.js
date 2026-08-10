@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { SparkRenderer, SplatMesh } from "@sparkjsdev/spark";
 import { GLTFLoader } from "./loaders/GLTFLoader.js";
 import { viewerConfig } from "./viewer-config.js";
 
@@ -24,6 +25,8 @@ if (mount && !mount.dataset.initialized) {
     mount.prepend(renderer.domElement);
 
     const scene = new THREE.Scene();
+    const spark = new SparkRenderer({ renderer });
+    scene.add(spark);
     const camera = new THREE.PerspectiveCamera(31, 1, 0.05, 100);
     let closeCameraZ = compact ? 6.1 : 5.7;
     let farCameraZ = closeCameraZ + viewerConfig.intro.farPadding;
@@ -55,6 +58,10 @@ if (mount && !mount.dataset.initialized) {
     scene.add(floorGrid);
 
     let model = null;
+    let modelIsSplat = false;
+    let splatReady = false;
+    let splatFailed = false;
+    let fallbackFailed = false;
     let pointCloud = null;
     let pointState = null;
     let currentMode = "neutral";
@@ -274,10 +281,78 @@ if (mount && !mount.dataset.initialized) {
     }
 
     const basePath = (mount.dataset.basePath || "").replace(/\/+$/, "");
+    const splatModel = new SplatMesh({
+      url: `${basePath}${viewerConfig.splat.path}`,
+      raycastable: false,
+      onProgress: (event) => {
+        if (!status || !event.total || splatReady) return;
+        status.textContent = `LOADING YOUR 3D SPLAT · ${Math.round((event.loaded / event.total) * 100)}%`;
+      },
+    });
+    root.add(splatModel);
+    splatModel.initialized.then(() => {
+      splatReady = true;
+      modelIsSplat = true;
+      splatModel.maxSh = viewerConfig.splat.maxSh;
+      splatModel.updateGenerator();
+      const scale = viewerConfig.splat.displayHeight / viewerConfig.splat.height;
+      splatModel.scale.setScalar(scale);
+      splatModel.rotation.y = viewerConfig.splat.yaw;
+      const centeredOffset = new THREE.Vector3(
+        viewerConfig.splat.center[0] * scale,
+        0,
+        viewerConfig.splat.center[2] * scale,
+      ).applyEuler(splatModel.rotation);
+      splatModel.position.set(
+        -centeredOffset.x,
+        -viewerConfig.splat.minY * scale - 1.2,
+        -centeredOffset.z,
+      );
+
+      if (model && model !== splatModel) root.remove(model);
+      if (pointCloud) {
+        root.remove(pointCloud);
+        pointCloud.geometry.dispose();
+        pointCloud.material.dispose();
+        pointCloud = null;
+        pointState = null;
+      }
+      model = splatModel;
+      bones.clear();
+      baseRotations.clear();
+      const fixedAnchors = {
+        Skeleton_neck_joint_2: [0, 0.88, 0],
+        Skeleton_arm_joint_L__2_: [0.46, 0.24, 0],
+        Skeleton_arm_joint_R__3_: [-0.46, 0.24, 0],
+        Skeleton_torso_joint_2: [0, 0.08, 0],
+      };
+      Object.entries(fixedAnchors).forEach(([name, position]) => {
+        const anchor = new THREE.Object3D();
+        anchor.name = name;
+        anchor.position.set(...position);
+        root.add(anchor);
+        bones.set(name, anchor);
+        baseRotations.set(name, anchor.quaternion.clone());
+      });
+
+      stage?.classList.remove("avatar-load-failed");
+      stage?.classList.add("is-webgl-ready", "is-splat-ready");
+      if (status) status.textContent = "YOUR 3D SPLAT · READY";
+      introStart = performance.now();
+    }).catch(() => {
+      splatFailed = true;
+      root.remove(splatModel);
+      if (fallbackFailed && !model) {
+        stage?.classList.add("avatar-load-failed");
+        if (status) status.textContent = "3D UNAVAILABLE · ACCESSIBLE FALLBACK ACTIVE";
+      }
+    });
+
     const loader = new GLTFLoader();
     loader.load(
       `${basePath}/avatar/models/CesiumMan.glb`,
       (gltf) => {
+        if (splatReady) return;
         model = gltf.scene;
         // Align CesiumMan's authored axis with the viewer's Y-up stage before
         // measuring, centering, and fitting the camera.
@@ -330,7 +405,7 @@ if (mount && !mount.dataset.initialized) {
 
         if (sourceMesh?.isSkinnedMesh) makeSplatProxy(sourceMesh);
         stage?.classList.add("is-webgl-ready");
-        if (status) status.textContent = "3D SPLAT PROXY · READY";
+        if (status) status.textContent = splatFailed ? "3D FALLBACK · READY" : "LOADING YOUR 3D SPLAT";
         introStart = performance.now();
       },
       (event) => {
@@ -338,8 +413,11 @@ if (mount && !mount.dataset.initialized) {
         status.textContent = `LOADING 3D AVATAR · ${Math.round((event.loaded / event.total) * 100)}%`;
       },
       () => {
-        stage?.classList.add("avatar-load-failed");
-        if (status) status.textContent = "3D UNAVAILABLE · ACCESSIBLE FALLBACK ACTIVE";
+        fallbackFailed = true;
+        if (splatFailed && !model) {
+          stage?.classList.add("avatar-load-failed");
+          if (status) status.textContent = "3D UNAVAILABLE · ACCESSIBLE FALLBACK ACTIVE";
+        }
       },
     );
 
@@ -382,7 +460,7 @@ if (mount && !mount.dataset.initialized) {
         camera.position.x = Math.sin(cameraAngle) * horizontalRadius;
         camera.position.z = Math.cos(cameraAngle) * horizontalRadius;
         camera.position.y = viewerConfig.target[1] + Math.sin(cameraElevation) * radius;
-        root.rotation.y = -Math.PI * 0.5;
+        root.rotation.y = modelIsSplat ? 0 : -Math.PI * 0.5;
         root.rotation.x = 0;
         root.position.x = 0;
       }
@@ -470,6 +548,7 @@ if (mount && !mount.dataset.initialized) {
       disposed = true;
       observer.disconnect();
       cancelAnimationFrame(resizeFrame);
+      if (splatModel.isInitialized) splatModel.dispose();
       renderer.dispose();
       gaussianTexture.dispose();
     }, { once: true });

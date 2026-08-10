@@ -1,4 +1,13 @@
 export const viewerConfig = {
+  splat: {
+    path: "/avatar/models/petros-koutroulis.sog",
+    center: [1.8027463, -0.29486905, 0.47268966],
+    minY: -1.2508229,
+    height: 1.9119077,
+    displayHeight: 2.45,
+    yaw: Math.PI * 0.5,
+    maxSh: 1,
+  },
   intro: {
     durationMs: 5200,
     orbitTurns: 2.2,

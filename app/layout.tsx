@@ -63,7 +63,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <script
           type="importmap"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({ imports: { three: sitePath("/avatar/vendor/three.module.js") } }),
+            __html: JSON.stringify({
+              imports: {
+                three: sitePath("/avatar/vendor/three.module.js"),
+                "three/addons/": sitePath("/avatar/vendor/addons/"),
+                "@sparkjsdev/spark": sitePath("/avatar/vendor/spark.module.js"),
+              },
+            }),
           }}
         />
       </body>
