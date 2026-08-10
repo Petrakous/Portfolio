@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import "./globals.css";
+import { sitePath } from "./site-path";
 
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
@@ -15,20 +16,20 @@ export async function generateMetadata(): Promise<Metadata> {
       "The interactive portfolio of Petros Koutroulis (Petrakous): computer vision, research data tooling, 3D web systems, and research software.",
     keywords: ["Petros Koutroulis", "Petrakous", "computer vision", "research tooling", "3D web", "Gaussian splatting", "software engineering"],
     authors: [{ name: "Petros Koutroulis", url: "https://github.com/Petrakous" }],
-    icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
+    icons: { icon: sitePath("/favicon.svg"), shortcut: sitePath("/favicon.svg") },
     openGraph: {
       type: "website",
-      url: origin,
+      url: `${origin}${sitePath("/")}`,
       title: "Petros Koutroulis — Personal Research Lab",
       description: "Tools and interactive systems for complex data, research workflows, and digital environments.",
       siteName: "Petrakous / Personal Research Lab",
-      images: [{ url: `${origin}/og.png`, width: 1200, height: 630, alt: "Petros Koutroulis — Personal Research Lab" }],
+      images: [{ url: `${origin}${sitePath("/og.png")}`, width: 1200, height: 630, alt: "Petros Koutroulis — Personal Research Lab" }],
     },
     twitter: {
       card: "summary_large_image",
       title: "Petros Koutroulis — Personal Research Lab",
       description: "Research tooling, computer vision, spatial computing, and research software.",
-      images: [`${origin}/og.png`],
+      images: [`${origin}${sitePath("/og.png")}`],
     },
   };
 }
@@ -61,7 +62,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <script
           type="importmap"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({ imports: { three: "/avatar/vendor/three.module.js" } }),
+            __html: JSON.stringify({ imports: { three: sitePath("/avatar/vendor/three.module.js") } }),
           }}
         />
       </body>

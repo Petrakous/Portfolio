@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { getPortfolioSection, type PortfolioCard } from "./portfolio-data";
 import { homeCopy, type SignalId } from "./site-copy";
+import { sitePath } from "./site-path";
 
 function AvatarStage({ active, setActive }: { active: SignalId | null; setActive: (signal: SignalId | null) => void }) {
   const activate = (signal: SignalId) => setActive(active === signal ? null : signal);
@@ -12,7 +13,7 @@ function AvatarStage({ active, setActive }: { active: SignalId | null; setActive
     if (existing) return;
     const runtime = document.createElement("script");
     runtime.type = "module";
-    runtime.src = "/avatar/avatar-viewer.js";
+    runtime.src = sitePath("/avatar/avatar-viewer.js");
     runtime.dataset.avatarRuntime = "true";
     document.body.append(runtime);
   }, []);
@@ -23,7 +24,7 @@ function AvatarStage({ active, setActive }: { active: SignalId | null; setActive
 
   return (
     <div className="avatar-stage" data-state={active ?? "neutral"} aria-label="Interactive 3D navigation">
-      <div className="avatar-webgl" data-avatar-webgl><span data-avatar-status>LOADING 3D</span></div>
+      <div className="avatar-webgl" data-avatar-webgl data-base-path={sitePath("/").replace(/\/$/, "")}><span data-avatar-status>LOADING 3D</span></div>
       <div className="cinematic-vignette" aria-hidden="true" />
       <div className="avatar-controls" aria-label="Explore the portfolio">
         {homeCopy.signals.map((signal) => (
@@ -191,7 +192,7 @@ export default function Home() {
                 >
                   <div className={`signal-slide-visual ${card.image ? "has-image" : "is-abstract"}`}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    {card.image && <img src={card.image} alt={card.imageAlt ?? ""} />}
+                    {card.image && <img src={sitePath(card.image)} alt={card.imageAlt ?? ""} />}
                     {!card.image && <b>{String(index + 1).padStart(2, "0")}</b>}
                   </div>
                   <small>{card.kicker}</small>
@@ -211,7 +212,7 @@ export default function Home() {
             </div>
             <div className="signal-deck-footer">
               <span>{String(cardIndex + 1).padStart(2, "0")} / {String(visibleCards.length).padStart(2, "0")}</span>
-              <a className="signal-more" href={section.href}>More <i>↗</i></a>
+              <a className="signal-more" href={sitePath(section.href)}>More <i>↗</i></a>
             </div>
           </>
         )}
@@ -224,7 +225,7 @@ export default function Home() {
             <button className="portfolio-dialog-close" type="button" onClick={() => setSelectedCard(null)} aria-label="Close details">×</button>
             <div className="portfolio-dialog-visual">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              {selectedCard.image && <img src={selectedCard.image} alt={selectedCard.imageAlt ?? ""} />}
+              {selectedCard.image && <img src={sitePath(selectedCard.image)} alt={selectedCard.imageAlt ?? ""} />}
             </div>
             <div className="portfolio-dialog-copy">
               <small>{section.label} / {selectedCard.group}</small>

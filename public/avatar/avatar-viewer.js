@@ -273,9 +273,10 @@ if (mount && !mount.dataset.initialized) {
       }
     }
 
+    const basePath = (mount.dataset.basePath || "").replace(/\/+$/, "");
     const loader = new GLTFLoader();
     loader.load(
-      "/avatar/models/CesiumMan.glb",
+      `${basePath}/avatar/models/CesiumMan.glb`,
       (gltf) => {
         model = gltf.scene;
         // Align CesiumMan's authored axis with the viewer's Y-up stage before

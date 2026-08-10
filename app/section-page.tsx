@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { PortfolioCard, PortfolioSection } from "./portfolio-data";
+import { sitePath } from "./site-path";
 
 export function SectionPage({ section }: { section: PortfolioSection }) {
   const groups = [...new Set(section.cards.map((card) => card.group))];
@@ -25,8 +26,7 @@ export function SectionPage({ section }: { section: PortfolioSection }) {
     <main className="section-index">
       <header className="section-index-header">
         {/* Full navigation intentionally reinitializes the standalone WebGL runtime. */}
-        {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-        <a href="/">← 3D INDEX</a>
+        <a href={sitePath("/")}>← 3D INDEX</a>
         <p>PETROS KOUTROULIS</p>
       </header>
 
@@ -50,7 +50,7 @@ export function SectionPage({ section }: { section: PortfolioSection }) {
                 <article className="portfolio-card" key={card.id} id={card.id}>
                   <div className="portfolio-card-visual has-image">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={card.image} alt={card.imageAlt ?? ""} />
+                    <img src={sitePath(card.image ?? "")} alt={card.imageAlt ?? ""} />
                   </div>
                   <small>{card.kicker}</small>
                   <h3>{card.title}</h3>
@@ -81,7 +81,7 @@ export function SectionPage({ section }: { section: PortfolioSection }) {
             <button className="portfolio-dialog-close" type="button" onClick={() => setSelectedCard(null)} aria-label="Close details">×</button>
             <div className="portfolio-dialog-visual">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={selectedCard.image} alt={selectedCard.imageAlt ?? ""} />
+              <img src={sitePath(selectedCard.image ?? "")} alt={selectedCard.imageAlt ?? ""} />
             </div>
             <div className="portfolio-dialog-copy">
               <small>{section.label} / {selectedCard.group}</small>
